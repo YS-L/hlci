@@ -10,15 +10,6 @@ import qualified Text.Parsec.Token       as Tok
 import           Language.LOLCODE.Lexer
 import           Language.LOLCODE.Syntax
 
-binary s f assoc = Ex.Infix (reservedOp s >> return (BinOp f)) assoc
-
-table1 = [[binary "*" Times Ex.AssocLeft,
-          binary "/" Divide Ex.AssocLeft]
-        ,[binary "+" Plus Ex.AssocLeft,
-          binary "-" Minus Ex.AssocLeft]]
-
-table = []
-
 factor :: Parser Expr
 factor = try numbar
       <|> try numbr
@@ -43,7 +34,7 @@ yarn = do
     return $ Yarn s
 
 expr :: Parser Expr
-expr = Ex.buildExpressionParser table factor
+expr = Ex.buildExpressionParser [] factor
 
 variable :: Parser Expr
 variable = do
