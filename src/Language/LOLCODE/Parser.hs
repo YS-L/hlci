@@ -24,47 +24,46 @@ factor = try numbar
       <|> try numbr
       <|> try yarn
       <|> try function
-      <|> try something
       <|> variable
       <|> parens expr
 
 numbr :: Parser Expr
 numbr = do
-  n <- integer
-  return $ Numbr n
+    n <- integer
+    return $ Numbr n
 
 numbar :: Parser Expr
 numbar = do
-  n <- float
-  return $ Numbar n
+    n <- float
+    return $ Numbar n
 
 yarn :: Parser Expr
 yarn = do
-  s <- stringLiteral
-  return $ Yarn s
+    s <- stringLiteral
+    return $ Yarn s
 
 expr :: Parser Expr
 expr = Ex.buildExpressionParser table factor
 
-something :: Parser Expr
-something = do
-  reserved "HOW IZ I"
-  v <- integer
-  reserved "IF U SAY SO"
-  return $ Numbr v
-
 variable :: Parser Expr
 variable = do
-  var <- identifier
-  return $ Var var
+    var <- identifier
+    return $ Var var
 
 function :: Parser Expr
 function = do
-  reserved "def"
-  name <- identifier
-  args <- parens $ many variable
-  body <- expr
-  return $ Function name args body
+    reserved "HOW IZ I"
+    name <- identifier
+    args <- sepBy funcArgs (reserved "AN")
+    body <- statement
+    reserved "IF U SAY SO"
+    return $ Function name args body
+
+funcArgs :: Parser String
+funcArgs = do
+    reserved "YR"
+    ex <- identifier
+    return ex
 
 statement :: Parser Stmt
 statement =  parens statement

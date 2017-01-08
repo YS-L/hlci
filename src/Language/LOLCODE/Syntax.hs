@@ -8,7 +8,7 @@ data Expr
     | Troof Bool
     | Var String
     | BinOp Op Expr Expr
-    | Function String [Expr] Expr
+    | Function String [String] Stmt
     | Call String [Expr]
     deriving (Eq, Ord, Show)
 

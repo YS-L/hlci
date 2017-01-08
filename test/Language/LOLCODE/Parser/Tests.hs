@@ -32,6 +32,26 @@ testYarn = checkExpr "\"abc def\"" [Yarn "abc def"]
 testVar :: Assertion
 testVar = checkExpr "a" [Var "a"]
 
+testFunction :: Assertion
+testFunction = checkExpr code expected
+    where
+        code = [r|
+        HOW IZ I attack
+            life R 0
+        IF U SAY SO
+        |]
+        expected = [Function "attack" [] (Assign "life" (Numbr 0))]
+
+testFunction2 :: Assertion
+testFunction2 = checkExpr code expected
+    where
+        code = [r|
+        HOW IZ I attack YR target AN YR power
+            life R 0
+        IF U SAY SO
+        |]
+        expected = [Function "attack" ["target", "power"] (Assign "life" (Numbr 0))]
+
 testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
@@ -74,6 +94,8 @@ tests = testGroup "Parser"
     , testCase "testNumbar" testNumbar
     , testCase "testYarn" testYarn
     , testCase "testVar" testVar
+    , testCase "testFunction" testFunction
+    , testCase "testFunction2" testFunction2
     , testCase "testAssign" testAssign
     , testCase "testIf" testIf
     , testCase "testIf2" testIf2
