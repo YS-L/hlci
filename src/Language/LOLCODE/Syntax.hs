@@ -46,7 +46,7 @@ data Type
 
 data Stmt
     = Seq [Stmt]
-    | Print String
+    | Print [Expr] Bool
     | Declare String
     | Assign String Expr
     | Return Expr

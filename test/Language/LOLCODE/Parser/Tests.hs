@@ -88,6 +88,22 @@ testIf2 = checkStmt code expected
 testExprStmt :: Assertion
 testExprStmt = checkStmt "1" (ExprStmt (Numbr 1))
 
+testPrintStmt :: Assertion
+testPrintStmt = checkStmt code expected
+    where
+        code = [r|
+        VISIBLE "a" 1 1.0
+        |]
+        expected = Print [Yarn "a", Numbr 1, Numbar 1.0] True
+
+testPrintStmt2 :: Assertion
+testPrintStmt2 = checkStmt code expected
+    where
+        code = [r|
+        VISIBLE "a" 1 1.0!
+        |]
+        expected = Print [Yarn "a", Numbr 1, Numbar 1.0] False
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -100,4 +116,6 @@ tests = testGroup "Parser"
     , testCase "testIf" testIf
     , testCase "testIf2" testIf2
     , testCase "testExprStmt" testExprStmt
+    , testCase "testPrintStmt" testPrintStmt
+    , testCase "testPrintStmt2" testPrintStmt2
     ]

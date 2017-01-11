@@ -17,6 +17,7 @@ lexer = Tok.makeTokenParser style
             , "VISIBLE", "GIMMEH"
             , "O", "RLY", "YA", "MEBBE", "NO", "WAI", "OIC"
             , "HOW", "IZ", "I", "YR", "IF", "U", "SAY", "SO"
+            , "VISIBLE"
             ]
     style = emptyDef {
                Tok.commentLine = "#"

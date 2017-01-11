@@ -71,6 +71,7 @@ statement' :: Parser Stmt
 statement' =  try assignStmt
           <|> try ifStmt
           <|> try exprStmt
+          <|> try printStmt
 
 assignStmt :: Parser Stmt
 assignStmt = do
@@ -98,6 +99,16 @@ exprStmt :: Parser Stmt
 exprStmt = do
     ex <- expr
     return $ ExprStmt ex
+
+printStmt :: Parser Stmt
+printStmt = do
+    reserved "VISIBLE"
+    exprs <- many1 expr
+    exclaim <- optionMaybe (reserved "!")
+    let newline = case exclaim of
+            Just _ -> False
+            Nothing -> True
+    return $ Print exprs newline
 
 defn :: Parser Expr
 defn =  try function
