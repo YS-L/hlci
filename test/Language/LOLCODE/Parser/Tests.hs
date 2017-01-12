@@ -55,6 +55,12 @@ testFunction2 = checkExpr code expected
 testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
+testDeclare1 :: Assertion
+testDeclare1 = checkStmt "I HAS A VAR" (Declare "VAR" (Noob "VAR"))
+
+testDeclare2 :: Assertion
+testDeclare2 = checkStmt "I HAS A VAR ITZ 1" (Declare "VAR" (Numbr 1))
+
 testIf :: Assertion
 testIf = checkStmt code expected
     where
@@ -113,6 +119,8 @@ tests = testGroup "Parser"
     , testCase "testFunction" testFunction
     , testCase "testFunction2" testFunction2
     , testCase "testAssign" testAssign
+    , testCase "testDeclare1" testDeclare1
+    , testCase "testDeclare2" testDeclare2
     , testCase "testIf" testIf
     , testCase "testIf2" testIf2
     , testCase "testExprStmt" testExprStmt

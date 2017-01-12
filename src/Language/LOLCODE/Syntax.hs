@@ -47,7 +47,7 @@ data Type
 data Stmt
     = Seq [Stmt]
     | Print [Expr] Bool
-    | Declare String
+    | Declare String Expr
     | Assign String Expr
     | Return Expr
     | If Stmt [(Expr, Stmt)] Stmt

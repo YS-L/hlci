@@ -69,6 +69,7 @@ sequenceOfStmt = do
 
 statement' :: Parser Stmt
 statement' =  try assignStmt
+          <|> try declareStmt
           <|> try ifStmt
           <|> try exprStmt
           <|> try printStmt
@@ -79,6 +80,15 @@ assignStmt = do
     reserved "R"
     value <- expr
     return $ Assign name value
+
+declareStmt :: Parser Stmt
+declareStmt = do
+    reserved "I HAS A"
+    name <- identifier
+    initialized <- optionMaybe (reserved "ITZ")
+    case initialized of
+        Nothing -> return $ Declare name (Noob name)
+        Just _ -> expr >>= (\x -> return $ Declare name x)
 
 ifStmt :: Parser Stmt
 ifStmt = do
