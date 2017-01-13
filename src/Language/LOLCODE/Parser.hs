@@ -15,7 +15,8 @@ factor = try numbar
       <|> try numbr
       <|> try yarn
       <|> try function
-      <|> variable
+      <|> try variable
+      <|> try maek
       <|> parens expr
 
 numbr :: Parser Expr
@@ -32,6 +33,29 @@ yarn :: Parser Expr
 yarn = do
     s <- stringLiteral
     return $ Yarn s
+
+vtype :: Parser Type
+vtype = do
+    tp <- (try $ symbol "TROOF")
+      <|> (try $ symbol "NUMBR")
+      <|> (try $ symbol "NUMBAR")
+      <|> (try $ symbol "YARN")
+      <|> (try $ symbol "NOOB")
+    case tp of
+        "TROOF" -> return TroofT
+        "NUMBR" -> return NumbrT
+        "NUMBAR" -> return NumbarT
+        "YARN" -> return YarnT
+        "NOOB" -> return NoobT
+        _ -> unexpected "Invalid type"
+
+maek :: Parser Expr
+maek = do
+    reserved "MAEK"
+    ex <- expr
+    optional (reserved "A")
+    tp <- vtype
+    return $ Maek ex tp
 
 expr :: Parser Expr
 expr = Ex.buildExpressionParser [] factor
@@ -70,6 +94,8 @@ sequenceOfStmt = do
 statement' :: Parser Stmt
 statement' =  try assignStmt
           <|> try declareStmt
+          <|> try castStmt1
+          <|> try castStmt2
           <|> try ifStmt
           <|> try exprStmt
           <|> try printStmt
@@ -89,6 +115,21 @@ declareStmt = do
     case initialized of
         Nothing -> return $ Declare name (Noob name)
         Just _ -> expr >>= (\x -> return $ Declare name x)
+
+castStmt1 :: Parser Stmt
+castStmt1 = do
+    name <- identifier
+    reserved "IS NOW A"
+    tp <- vtype
+    return $ Maek2 name tp
+
+castStmt2 :: Parser Stmt
+castStmt2 = do
+    name <- identifier
+    reserved "R MAEK"
+    optional (reserved "A")
+    tp <- vtype
+    return $ Maek2 name tp
 
 ifStmt :: Parser Stmt
 ifStmt = do

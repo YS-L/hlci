@@ -19,6 +19,7 @@ lexer = Tok.makeTokenParser style
             , "HOW", "IZ", "I", "YR", "IF", "U", "SAY", "SO"
             , "VISIBLE"
             , "I", "HAS", "A", "ITZ"
+            , "IS", "NOW", "R", "MAEK"
             ]
     style = emptyDef {
                Tok.commentLine = "#"
@@ -52,3 +53,6 @@ reserved = Tok.reserved lexer
 
 reservedOp :: String -> Parser ()
 reservedOp = Tok.reservedOp lexer
+
+symbol :: String -> Parser String
+symbol = Tok.symbol lexer

@@ -32,6 +32,21 @@ testYarn = checkExpr "\"abc def\"" [Yarn "abc def"]
 testVar :: Assertion
 testVar = checkExpr "a" [Var "a"]
 
+testMaekTroof :: Assertion
+testMaekTroof = checkExpr "MAEK VAR A TROOF" [Maek (Var "VAR") TroofT]
+
+testMaekNumbr :: Assertion
+testMaekNumbr = checkExpr "MAEK VAR A NUMBR" [Maek (Var "VAR") NumbrT]
+
+testMaekNumbar :: Assertion
+testMaekNumbar = checkExpr "MAEK VAR A NUMBAR" [Maek (Var "VAR") NumbarT]
+
+testMaekYarn :: Assertion
+testMaekYarn = checkExpr "MAEK VAR A YARN" [Maek (Var "VAR") YarnT]
+
+testMaekNoob :: Assertion
+testMaekNoob = checkExpr "MAEK VAR A NOOB" [Maek (Var "VAR") NoobT]
+
 testFunction :: Assertion
 testFunction = checkExpr code expected
     where
@@ -60,6 +75,15 @@ testDeclare1 = checkStmt "I HAS A VAR" (Declare "VAR" (Noob "VAR"))
 
 testDeclare2 :: Assertion
 testDeclare2 = checkStmt "I HAS A VAR ITZ 1" (Declare "VAR" (Numbr 1))
+
+testCastStmt1 :: Assertion
+testCastStmt1 = checkStmt "VAR IS NOW A NOOB" (Maek2 "VAR" NoobT)
+
+testCastStmt2A :: Assertion
+testCastStmt2A = checkStmt "VAR R MAEK A NOOB" (Maek2 "VAR" NoobT)
+
+testCastStmt2B :: Assertion
+testCastStmt2B = checkStmt "VAR R MAEK NOOB" (Maek2 "VAR" NoobT)
 
 testIf :: Assertion
 testIf = checkStmt code expected
@@ -116,11 +140,19 @@ tests = testGroup "Parser"
     , testCase "testNumbar" testNumbar
     , testCase "testYarn" testYarn
     , testCase "testVar" testVar
+    , testCase "testMaekTroof" testMaekTroof
+    , testCase "testMaekNumbr" testMaekNumbr
+    , testCase "testMaekNumbar" testMaekNumbar
+    , testCase "testMaekYarn" testMaekYarn
+    , testCase "testMaekNoob" testMaekNoob
     , testCase "testFunction" testFunction
     , testCase "testFunction2" testFunction2
     , testCase "testAssign" testAssign
     , testCase "testDeclare1" testDeclare1
     , testCase "testDeclare2" testDeclare2
+    , testCase "testCastStmt1" testCastStmt1
+    , testCase "testCastStmt2A" testCastStmt2A
+    , testCase "testCastStmt2B" testCastStmt2B
     , testCase "testIf" testIf
     , testCase "testIf2" testIf2
     , testCase "testExprStmt" testExprStmt

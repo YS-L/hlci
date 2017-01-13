@@ -10,7 +10,6 @@ data Expr
     | BinOp Op Expr Expr
     | NaryOp OpN [Expr]
     | Maek Expr Type
-    | Maek2 String Type
     | Function String [String] Stmt
     | Call String [Expr]
     deriving (Eq, Ord, Show)
@@ -49,12 +48,12 @@ data Stmt
     | Print [Expr] Bool
     | Declare String Expr
     | Assign String Expr
+    | Maek2 String Type
     | Return Expr
     | If Stmt [(Expr, Stmt)] Stmt
     | Case Stmt [(Expr, Stmt)] Stmt
     -- TDOO: Loop
     | CaseGtfo
-    | Found Expr
     | FunctionGtfo
     | ExprStmt Expr
     deriving (Eq, Ord, Show)
