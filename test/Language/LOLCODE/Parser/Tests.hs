@@ -67,6 +67,22 @@ testFunction2 = checkExpr code expected
         |]
         expected = [Function "attack" ["target", "power"] (Assign "life" (Numbr 0))]
 
+testCall1 :: Assertion
+testCall1 = checkExpr code expected
+    where
+        code = [r|
+        I IZ attack YR "doge" AN YR shiba MKAY
+        |]
+        expected = [Call "attack" [Yarn "doge", Var "shiba"]]
+
+testCall2 :: Assertion
+testCall2 = checkExpr code expected
+    where
+        code = [r|
+        I IZ attack MKAY
+        |]
+        expected = [Call "attack" []]
+
 testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
@@ -147,6 +163,8 @@ tests = testGroup "Parser"
     , testCase "testMaekNoob" testMaekNoob
     , testCase "testFunction" testFunction
     , testCase "testFunction2" testFunction2
+    , testCase "testCall1" testCall1
+    , testCase "testCall2" testCall2
     , testCase "testAssign" testAssign
     , testCase "testDeclare1" testDeclare1
     , testCase "testDeclare2" testDeclare2

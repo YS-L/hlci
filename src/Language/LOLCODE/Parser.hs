@@ -15,9 +15,13 @@ factor = try numbar
       <|> try numbr
       <|> try yarn
       <|> try function
+      <|> try call
       <|> try variable
       <|> try maek
       <|> parens expr
+
+expr :: Parser Expr
+expr = Ex.buildExpressionParser [] factor
 
 numbr :: Parser Expr
 numbr = do
@@ -57,9 +61,6 @@ maek = do
     tp <- vtype
     return $ Maek ex tp
 
-expr :: Parser Expr
-expr = Ex.buildExpressionParser [] factor
-
 variable :: Parser Expr
 variable = do
     var <- identifier
@@ -69,16 +70,18 @@ function :: Parser Expr
 function = do
     reserved "HOW IZ I"
     name <- identifier
-    args <- sepBy funcArgs (reserved "AN")
+    args <- sepBy (reserved "YR" >> identifier) (reserved "AN")
     body <- statement
     reserved "IF U SAY SO"
     return $ Function name args body
 
-funcArgs :: Parser String
-funcArgs = do
-    reserved "YR"
-    ex <- identifier
-    return ex
+call :: Parser Expr
+call = do
+    reserved "I IZ"
+    name <- identifier
+    exprs <- sepBy (reserved "YR" >> expr) (reserved "AN")
+    reserved "MKAY"
+    return $ Call name exprs
 
 statement :: Parser Stmt
 statement =  parens statement
