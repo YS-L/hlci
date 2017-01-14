@@ -102,6 +102,7 @@ statement' =  try assignStmt
           <|> try ifStmt
           <|> try exprStmt
           <|> try printStmt
+          <|> try returnStmt
 
 assignStmt :: Parser Stmt
 assignStmt = do
@@ -117,7 +118,7 @@ declareStmt = do
     initialized <- optionMaybe (reserved "ITZ")
     case initialized of
         Nothing -> return $ Declare name (Noob name)
-        Just _ -> expr >>= (\x -> return $ Declare name x)
+        Just _ -> expr >>= (return . Declare name)
 
 castStmt1 :: Parser Stmt
 castStmt1 = do
@@ -163,6 +164,9 @@ printStmt = do
             Just _ -> False
             Nothing -> True
     return $ Print exprs newline
+
+returnStmt :: Parser Stmt
+returnStmt = (reserved "FOUND YR") >> expr >>= (return . Return)
 
 defn :: Parser Expr
 defn =  try function

@@ -53,7 +53,6 @@ data Stmt
     | If Stmt [(Expr, Stmt)] Stmt
     | Case Stmt [(Expr, Stmt)] Stmt
     -- TDOO: Loop
-    | CaseGtfo
-    | FunctionGtfo
+    | Gtfo
     | ExprStmt Expr
     deriving (Eq, Ord, Show)

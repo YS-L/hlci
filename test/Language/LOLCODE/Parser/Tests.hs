@@ -150,6 +150,9 @@ testPrintStmt2 = checkStmt code expected
         |]
         expected = Print [Yarn "a", Numbr 1, Numbar 1.0] False
 
+testReturn :: Assertion
+testReturn = checkStmt "FOUND YR shiba" (Return (Var "shiba"))
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -176,4 +179,5 @@ tests = testGroup "Parser"
     , testCase "testExprStmt" testExprStmt
     , testCase "testPrintStmt" testPrintStmt
     , testCase "testPrintStmt2" testPrintStmt2
+    , testCase "testReturn" testReturn
     ]
