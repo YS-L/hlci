@@ -19,8 +19,10 @@ library
                      , Language.LOLCODE.Lexer
                      , Language.LOLCODE.Parser
                      , Language.LOLCODE.Syntax
+                     , Language.LOLCODE.Interpreter
   build-depends:       base >= 4.7 && < 5
                      , parsec
+                     , mtl
                      , containers
   default-language:    Haskell2010
 
@@ -38,6 +40,7 @@ test-suite hlci-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   other-modules:       Language.LOLCODE.Parser.Tests
+                     , Language.LOLCODE.Interpreter.Tests
   main-is:             Spec.hs
   build-depends:       base
                      , hlci
