@@ -13,6 +13,13 @@ data Env = Env { globals :: Store
 
 type Interp a = StateT Env IO a
 
+lookupEnv :: (Env -> Store) -> String -> Interp Expr
+lookupEnv f name = do
+    env <- get
+    case lookup name (f env) of
+        Nothing -> fail ("Unbounded variable '" ++ name ++ "'")
+        Just ex -> return ex
+
 eval :: Expr -> Interp Expr
 
 eval (Numbr v) = return (Numbr v)
@@ -25,13 +32,23 @@ eval (Yarn v) = return (Yarn v)
 
 eval (Troof v) = return (Troof v)
 
-eval (Var name) = do
-    env <- get
-    case lookup name (locals env) of
-        Nothing -> fail ("Unbounded variable '" ++ name ++ "'")
-        Just ex -> return ex
+eval (Var name) = lookupEnv locals name
 
 eval p@(Function name args body) = return p
+
+eval (Call name exprs) = do
+    func <- lookupEnv globals name
+    case func of
+        Function _ args prog -> do
+            env <- get
+            let current = locals env
+                locals' = zip args exprs ++ [("IT", Noob "IT")]
+            put $ env { locals = locals' }
+            exec prog
+            ret <- lookupEnv locals "IT"
+            put $ env { locals = current }
+            return ret
+        _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
 
 eval p@_ = fail $ "Expression not implemented: " ++ show p
 
