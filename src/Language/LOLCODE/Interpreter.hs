@@ -63,7 +63,9 @@ exec (Seq []) = return ()
 
 exec (Seq (s:ss)) = do
     exec s
-    exec (Seq ss)
+    case s of
+        Return _ -> return ()
+        _ -> exec (Seq ss)
 
 exec (Assign name ex) = do
     ex' <- eval ex
@@ -74,6 +76,10 @@ exec (Declare name ex) = do
     pushLocal name ex'
 
 exec (ExprStmt ex) = do
+    ex' <- eval ex
+    pushLocal "IT" ex'
+
+exec (Return ex) = do
     ex' <- eval ex
     pushLocal "IT" ex'
 

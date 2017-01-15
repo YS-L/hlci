@@ -66,8 +66,23 @@ testCall = checkStoreLocal code expected
         |]
         expected = [("IT", Numbr 123), ("SWORD", Numbr 123)]
 
+testReturn :: Assertion
+testReturn = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I gimmeh_sword
+            FOUND YR "stick"
+            FOUND YR "SHOULD NOT BE HERE!!1"
+        IF U SAY SO
+
+        I HAS A SWORD ITZ (I IZ gimmeh_sword MKAY)
+        SWORD
+        |]
+        expected = [("IT", Yarn "stick"), ("SWORD", Yarn "stick")]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
     , testCase "testCall" testCall
+    , testCase "testReturn" testReturn
     ]
