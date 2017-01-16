@@ -167,6 +167,18 @@ testComment2 = checkStmt code expected
         |]
         expected = (ExprStmt (Var "a"))
 
+testCommaLineBreak :: Assertion
+testCommaLineBreak = checkStmt code expected
+    where
+        code = [r|
+        OBTW
+            THIS IS JUST A TEST
+        TLDR
+        a, b BTW THIS IZ TWO LINES
+        c,
+        |]
+        expected = Seq [(ExprStmt (Var "a")), (ExprStmt (Var "b")), (ExprStmt (Var "c"))]
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -196,4 +208,5 @@ tests = testGroup "Parser"
     , testCase "testReturn" testReturn
     , testCase "testComment1" testComment1
     , testCase "testComment2" testComment2
+    , testCase "testCommaLineBreak" testCommaLineBreak
     ]

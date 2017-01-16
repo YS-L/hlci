@@ -10,6 +10,7 @@ lexer = Tok.makeTokenParser style
   where
     ops = ["+","*","-",";"]
     names = [ "R", "AN"
+            , "BTW", "OBTW", "TLDR"
             , "SUM", "DIFF", "PRODUKT", "QUOSHUNT", "MOD", "BIGGR", "SMALLR", "OF"
             , "BOTH", "EITHER", "WON", "NOT", "ALL", "ANY"
             , "SAEM", "DIFFRINT"

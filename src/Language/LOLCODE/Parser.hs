@@ -91,6 +91,7 @@ sequenceOfStmt :: Parser Stmt
 sequenceOfStmt = do
     list <- many $ do
         st <- statement'
+        optional $ symbol ","
         return $ st
     return $ if length list == 1 then head list else Seq list
 
