@@ -153,6 +153,20 @@ testPrintStmt2 = checkStmt code expected
 testReturn :: Assertion
 testReturn = checkStmt "FOUND YR shiba" (Return (Var "shiba"))
 
+testComment1 :: Assertion
+testComment1 = checkStmt "a BTW STAY AWAY FROM SHIBA KBYE" (ExprStmt (Var "a"))
+
+testComment2 :: Assertion
+testComment2 = checkStmt code expected
+    where
+        code = [r|
+        OBTW
+            THIS IS JUST A TEST
+        TLDR
+        a BTW THIS IS OK -- BOB'S FREN
+        |]
+        expected = (ExprStmt (Var "a"))
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -180,4 +194,6 @@ tests = testGroup "Parser"
     , testCase "testPrintStmt" testPrintStmt
     , testCase "testPrintStmt2" testPrintStmt2
     , testCase "testReturn" testReturn
+    , testCase "testComment1" testComment1
+    , testCase "testComment2" testComment2
     ]

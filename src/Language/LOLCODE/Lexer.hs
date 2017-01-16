@@ -9,7 +9,7 @@ lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
   where
     ops = ["+","*","-",";"]
-    names = [ "R", "AN", "BTW"
+    names = [ "R", "AN"
             , "SUM", "DIFF", "PRODUKT", "QUOSHUNT", "MOD", "BIGGR", "SMALLR", "OF"
             , "BOTH", "EITHER", "WON", "NOT", "ALL", "ANY"
             , "SAEM", "DIFFRINT"
@@ -24,7 +24,9 @@ lexer = Tok.makeTokenParser style
             , "FOUND", "YR"
             ]
     style = emptyDef {
-               Tok.commentLine = "#"
+               Tok.commentLine = "BTW"
+             , Tok.commentStart = "OBTW"
+             , Tok.commentEnd = "TLDR"
              , Tok.reservedOpNames = ops
              , Tok.reservedNames = names
              }
