@@ -22,11 +22,11 @@ lookupEnv f name = do
 
 eval :: Expr -> Interp Expr
 
+eval Noob = return Noob
+
 eval (Numbr v) = return (Numbr v)
 
 eval (Numbar v) = return (Numbar v)
-
-eval (Noob v) = return (Noob v)
 
 eval (Yarn v) = return (Yarn v)
 
@@ -42,7 +42,7 @@ eval (Call name exprs) = do
         Function _ args prog -> do
             env <- get
             let current = locals env
-                locals' = zip args exprs ++ [("IT", Noob "IT")]
+                locals' = zip args exprs ++ [("IT", Noob)]
             put $ env { locals = locals' }
             exec prog
             ret <- lookupEnv locals "IT"

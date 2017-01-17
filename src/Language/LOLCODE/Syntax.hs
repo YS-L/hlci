@@ -1,7 +1,7 @@
 module Language.LOLCODE.Syntax where
 
 data Expr
-    = Noob String
+    = Noob
     | Yarn String
     | Numbr Integer
     | Numbar Double

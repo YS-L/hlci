@@ -87,7 +87,7 @@ testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
 testDeclare1 :: Assertion
-testDeclare1 = checkStmt "I HAS A VAR" (Declare "VAR" (Noob "VAR"))
+testDeclare1 = checkStmt "I HAS A VAR" (Declare "VAR" Noob)
 
 testDeclare2 :: Assertion
 testDeclare2 = checkStmt "I HAS A VAR ITZ 1" (Declare "VAR" (Numbr 1))

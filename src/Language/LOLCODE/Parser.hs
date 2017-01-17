@@ -118,7 +118,7 @@ declareStmt = do
     name <- identifier
     initialized <- optionMaybe (reserved "ITZ")
     case initialized of
-        Nothing -> return $ Declare name (Noob name)
+        Nothing -> return $ Declare name Noob
         Just _ -> expr >>= (return . Declare name)
 
 castStmt1 :: Parser Stmt
