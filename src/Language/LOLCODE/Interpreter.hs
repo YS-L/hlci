@@ -1,7 +1,8 @@
 module Language.LOLCODE.Interpreter where
 
-import           Control.Monad.State     (StateT, get, modify, put, runStateT)
-import           Data.List               (nubBy)
+import           Control.Monad.State     (StateT, get, liftIO, liftM, modify,
+                                          put, runStateT)
+import           Data.List               (intercalate, nubBy)
 import           Data.Maybe              (mapMaybe)
 import           Language.LOLCODE.Syntax
 
@@ -33,6 +34,19 @@ eval (Yarn v) = return (Yarn v)
 eval (Troof v) = return (Troof v)
 
 eval (Var name) = lookupEnv locals name
+
+eval (Maek Noob YarnT) = return $ Yarn "Noob"
+
+eval (Maek (Troof v) YarnT) = return $ Yarn s
+    where s = case v of
+            True -> "WIN"
+            _ -> "FAIL"
+
+eval (Maek (Numbr v) YarnT) = return $ Yarn (show v)
+
+eval (Maek (Numbar v) YarnT) = return $ Yarn (show v)
+
+eval (Maek (Yarn v) YarnT) = return $ Yarn v
 
 eval p@(Function name args body) = return p
 
@@ -82,6 +96,17 @@ exec (ExprStmt ex) = do
 exec (Return ex) = do
     ex' <- eval ex
     pushLocal "IT" ex'
+
+exec (Print exprs newline) = do
+    exprs' <- mapM eval exprs
+    strings <- mapM (\ex -> liftM unYarn $ eval $ Maek ex YarnT) exprs'
+    liftIO $ putStr $ intercalate "" strings
+    case newline of
+        True -> liftIO $ putStr "\n"
+        _ -> return ()
+    where unYarn x = case x of
+            Yarn s -> s
+            _ -> ""
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 

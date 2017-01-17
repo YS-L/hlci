@@ -13,6 +13,7 @@ import           Language.LOLCODE.Syntax
 factor :: Parser Expr
 factor = try numbar
       <|> try numbr
+      <|> try troof
       <|> try yarn
       <|> try function
       <|> try call
@@ -32,6 +33,13 @@ numbar :: Parser Expr
 numbar = do
     n <- float
     return $ Numbar n
+
+troof :: Parser Expr
+troof = do
+    s <- (try $ symbol "WIN") <|> (try $ symbol "FAIL")
+    case s of
+        "WIN" -> return $ Troof True
+        _ -> return $ Troof False
 
 yarn :: Parser Expr
 yarn = do

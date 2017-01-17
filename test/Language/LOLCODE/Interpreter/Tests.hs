@@ -80,9 +80,22 @@ testReturn = checkStoreLocal code expected
         |]
         expected = [("IT", Yarn "stick"), ("SWORD", Yarn "stick")]
 
+testPrint :: Assertion
+testPrint = checkStoreLocal code []
+    where
+        code = [r|
+        I HAS A CAT ITZ 123
+        I HAS A SHIBA ITZ "abc"
+        I HAS A DOGE ITZ 1.23
+        I HAS A WOW ITZ WIN
+        VISIBLE CAT SHIBA DOGE WOW " "!
+        VISIBLE CAT SHIBA DOGE WOW
+        |]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
     , testCase "testCall" testCall
     , testCase "testReturn" testReturn
+    , testCase "testPrint" testPrint
     ]
