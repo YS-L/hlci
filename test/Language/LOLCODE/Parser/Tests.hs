@@ -83,6 +83,30 @@ testCall2 = checkExpr code expected
         |]
         expected = [Call "attack" []]
 
+testSmoosh1 :: Assertion
+testSmoosh1 = checkExpr code expected
+    where
+        code = [r|
+        SMOOSH "CAT" AN "SHIBA" MKAY
+        |]
+        expected = [Smoosh [Yarn "CAT", Yarn "SHIBA"]]
+
+testSmoosh2 :: Assertion
+testSmoosh2 = checkExpr code expected
+    where
+        code = [r|
+        SMOOSH "CAT" AN "SHIBA"
+        |]
+        expected = [Smoosh [Yarn "CAT", Yarn "SHIBA"]]
+
+testSmoosh3 :: Assertion
+testSmoosh3 = checkExpr code expected
+    where
+        code = [r|
+        SMOOSH "CAT" "SHIBA"
+        |]
+        expected = [Smoosh [Yarn "CAT", Yarn "SHIBA"]]
+
 testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
@@ -194,6 +218,9 @@ tests = testGroup "Parser"
     , testCase "testFunction2" testFunction2
     , testCase "testCall1" testCall1
     , testCase "testCall2" testCall2
+    , testCase "testSmoosh1" testSmoosh1
+    , testCase "testSmoosh2" testSmoosh2
+    , testCase "testSmoosh3" testSmoosh3
     , testCase "testAssign" testAssign
     , testCase "testDeclare1" testDeclare1
     , testCase "testDeclare2" testDeclare2

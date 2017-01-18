@@ -12,6 +12,7 @@ data Expr
     | Maek Expr Type
     | Function String [String] Stmt
     | Call String [Expr]
+    | Smoosh [Expr]
     deriving (Eq, Ord, Show)
 
 data Op

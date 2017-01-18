@@ -19,6 +19,7 @@ factor = try numbar
       <|> try call
       <|> try variable
       <|> try maek
+      <|> try smoosh
       <|> parens expr
 
 expr :: Parser Expr
@@ -90,6 +91,13 @@ call = do
     exprs <- sepBy (reserved "YR" >> expr) (reserved "AN")
     reserved "MKAY"
     return $ Call name exprs
+
+smoosh :: Parser Expr
+smoosh = do
+    reserved "SMOOSH"
+    exprs <- sepBy expr (optional $ reserved "AN")
+    optional $ reserved "MKAY"
+    return $ Smoosh exprs
 
 statement :: Parser Stmt
 statement =  parens statement
