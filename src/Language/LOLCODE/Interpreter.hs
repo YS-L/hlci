@@ -2,7 +2,7 @@ module Language.LOLCODE.Interpreter where
 
 import           Control.Monad.State     (StateT, get, liftIO, liftM, modify,
                                           put, runStateT)
-import           Data.List               (intercalate, nubBy)
+import           Data.List               (find, intercalate, nubBy)
 import           Data.Maybe              (mapMaybe)
 import           Language.LOLCODE.Syntax
 
@@ -118,8 +118,22 @@ exec (Print exprs newline) = do
             _ -> ""
 
 exec (Cast2 name tp) = do
-    ex <- eval (Var name) >>= \x -> eval $ Cast x tp
+    ex <- lookupEnv locals name >>= \x -> eval $ Cast x tp
     pushLocal name ex
+
+exec (If yes pairs no) = do
+    ex <- lookupEnv locals "IT"
+    let exprs = ex : map fst pairs
+        stmts = yes : map snd pairs
+    conds <- mapM (\p -> eval p >>= (\x -> eval (Cast x TroofT))) exprs
+    let pair = find (unTroof . fst) $ zip conds stmts
+            where
+                unTroof x = case x of
+                    Troof True -> True
+                    _ -> False
+    case pair of
+        Just (_, s) -> exec s
+        Nothing -> exec no
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 

@@ -102,6 +102,66 @@ testCastStmt = checkStoreLocal code expected
         |]
         expected = [("VAR", Troof True), ("VAR2", Numbr 1)]
 
+testIf1 :: Assertion
+testIf1 = checkStoreLocal code expected
+    where
+        code = [r|
+        WIN
+        O RLY?
+          YA RLY
+            VAR R 1
+          NO WAI
+            VAR R 0
+        OIC
+        |]
+        expected = [("VAR", Numbr 1)]
+
+testIf2 :: Assertion
+testIf2 = checkStoreLocal code expected
+    where
+        code = [r|
+        FAIL
+        O RLY?
+          YA RLY
+            VAR R 1
+          NO WAI
+            VAR R 0
+        OIC
+        |]
+        expected = [("VAR", Numbr 0)]
+
+testIf3 :: Assertion
+testIf3 = checkStoreLocal code expected
+    where
+        code = [r|
+        FAIL
+        O RLY?
+          YA RLY
+            VAR R 1
+          MEBBE WIN
+            VAR R 2
+          NO WAI
+            VAR R 0
+        OIC
+        |]
+        expected = [("VAR", Numbr 2)]
+
+testIf4 :: Assertion
+testIf4 = checkStoreLocal code expected
+    where
+        code = [r|
+        0, O RLY?
+          YA RLY
+            VAR R 1
+          MEBBE 0.0
+            VAR R 2
+          NO WAI
+            VAR R 100
+            VAR2 R 101
+        OIC
+        |]
+        expected = [("VAR", Numbr 100), ("VAR2", Numbr 101)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -109,4 +169,8 @@ tests = testGroup "Interpreter"
     , testCase "testReturn" testReturn
     , testCase "testPrint" testPrint
     , testCase "testCastStmt" testCastStmt
+    , testCase "testIf1" testIf1
+    , testCase "testIf2" testIf2
+    , testCase "testIf3" testIf3
+    , testCase "testIf4" testIf4
     ]
