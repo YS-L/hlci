@@ -32,20 +32,20 @@ testYarn = checkExpr "\"abc def\"" [Yarn "abc def"]
 testVar :: Assertion
 testVar = checkExpr "a" [Var "a"]
 
-testMaekTroof :: Assertion
-testMaekTroof = checkExpr "MAEK VAR A TROOF" [Maek (Var "VAR") TroofT]
+testCastTroof :: Assertion
+testCastTroof = checkExpr "MAEK VAR A TROOF" [Cast (Var "VAR") TroofT]
 
-testMaekNumbr :: Assertion
-testMaekNumbr = checkExpr "MAEK VAR A NUMBR" [Maek (Var "VAR") NumbrT]
+testCastNumbr :: Assertion
+testCastNumbr = checkExpr "MAEK VAR A NUMBR" [Cast (Var "VAR") NumbrT]
 
-testMaekNumbar :: Assertion
-testMaekNumbar = checkExpr "MAEK VAR A NUMBAR" [Maek (Var "VAR") NumbarT]
+testCastNumbar :: Assertion
+testCastNumbar = checkExpr "MAEK VAR A NUMBAR" [Cast (Var "VAR") NumbarT]
 
-testMaekYarn :: Assertion
-testMaekYarn = checkExpr "MAEK VAR A YARN" [Maek (Var "VAR") YarnT]
+testCastYarn :: Assertion
+testCastYarn = checkExpr "MAEK VAR A YARN" [Cast (Var "VAR") YarnT]
 
-testMaekNoob :: Assertion
-testMaekNoob = checkExpr "MAEK VAR A NOOB" [Maek (Var "VAR") NoobT]
+testCastNoob :: Assertion
+testCastNoob = checkExpr "MAEK VAR A NOOB" [Cast (Var "VAR") NoobT]
 
 testFunction :: Assertion
 testFunction = checkExpr code expected
@@ -117,13 +117,13 @@ testDeclare2 :: Assertion
 testDeclare2 = checkStmt "I HAS A VAR ITZ 1" (Declare "VAR" (Numbr 1))
 
 testCastStmt1 :: Assertion
-testCastStmt1 = checkStmt "VAR IS NOW A NOOB" (Maek2 "VAR" NoobT)
+testCastStmt1 = checkStmt "VAR IS NOW A NOOB" (Cast2 "VAR" NoobT)
 
 testCastStmt2A :: Assertion
-testCastStmt2A = checkStmt "VAR R MAEK A NOOB" (Maek2 "VAR" NoobT)
+testCastStmt2A = checkStmt "VAR R MAEK A NOOB" (Cast2 "VAR" NoobT)
 
 testCastStmt2B :: Assertion
-testCastStmt2B = checkStmt "VAR R MAEK NOOB" (Maek2 "VAR" NoobT)
+testCastStmt2B = checkStmt "VAR R MAEK NOOB" (Cast2 "VAR" NoobT)
 
 testIf :: Assertion
 testIf = checkStmt code expected
@@ -209,11 +209,11 @@ tests = testGroup "Parser"
     , testCase "testNumbar" testNumbar
     , testCase "testYarn" testYarn
     , testCase "testVar" testVar
-    , testCase "testMaekTroof" testMaekTroof
-    , testCase "testMaekNumbr" testMaekNumbr
-    , testCase "testMaekNumbar" testMaekNumbar
-    , testCase "testMaekYarn" testMaekYarn
-    , testCase "testMaekNoob" testMaekNoob
+    , testCase "testCastTroof" testCastTroof
+    , testCase "testCastNumbr" testCastNumbr
+    , testCase "testCastNumbar" testCastNumbar
+    , testCase "testCastYarn" testCastYarn
+    , testCase "testCastNoob" testCastNoob
     , testCase "testFunction" testFunction
     , testCase "testFunction2" testFunction2
     , testCase "testCall1" testCall1

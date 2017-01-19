@@ -9,7 +9,7 @@ data Expr
     | Var String
     | BinOp Op Expr Expr
     | NaryOp OpN [Expr]
-    | Maek Expr Type
+    | Cast Expr Type
     | Function String [String] Stmt
     | Call String [Expr]
     | Smoosh [Expr]
@@ -49,7 +49,7 @@ data Stmt
     | Print [Expr] Bool
     | Declare String Expr
     | Assign String Expr
-    | Maek2 String Type
+    | Cast2 String Type
     | Return Expr
     | If Stmt [(Expr, Stmt)] Stmt
     | Case Stmt [(Expr, Stmt)] Stmt

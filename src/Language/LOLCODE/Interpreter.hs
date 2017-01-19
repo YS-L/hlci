@@ -35,18 +35,18 @@ eval (Troof v) = return (Troof v)
 
 eval (Var name) = lookupEnv locals name
 
-eval (Maek Noob YarnT) = return $ Yarn "Noob"
+eval (Cast Noob YarnT) = return $ Yarn "Noob"
 
-eval (Maek (Troof v) YarnT) = return $ Yarn s
+eval (Cast (Troof v) YarnT) = return $ Yarn s
     where s = case v of
             True -> "WIN"
             _ -> "FAIL"
 
-eval (Maek (Numbr v) YarnT) = return $ Yarn (show v)
+eval (Cast (Numbr v) YarnT) = return $ Yarn (show v)
 
-eval (Maek (Numbar v) YarnT) = return $ Yarn (show v)
+eval (Cast (Numbar v) YarnT) = return $ Yarn (show v)
 
-eval (Maek (Yarn v) YarnT) = return $ Yarn v
+eval (Cast (Yarn v) YarnT) = return $ Yarn v
 
 eval p@(Function name args body) = return p
 
@@ -99,7 +99,7 @@ exec (Return ex) = do
 
 exec (Print exprs newline) = do
     exprs' <- mapM eval exprs
-    strings <- mapM (\ex -> liftM unYarn $ eval $ Maek ex YarnT) exprs'
+    strings <- mapM (\ex -> liftM unYarn $ eval $ Cast ex YarnT) exprs'
     liftIO $ putStr $ intercalate "" strings
     case newline of
         True -> liftIO $ putStr "\n"

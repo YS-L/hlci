@@ -18,7 +18,7 @@ factor = try numbar
       <|> try function
       <|> try call
       <|> try variable
-      <|> try maek
+      <|> try cast
       <|> try smoosh
       <|> parens expr
 
@@ -62,13 +62,13 @@ vtype = do
         "NOOB" -> return NoobT
         _ -> unexpected "Invalid type"
 
-maek :: Parser Expr
-maek = do
+cast :: Parser Expr
+cast = do
     reserved "MAEK"
     ex <- expr
     optional (reserved "A")
     tp <- vtype
-    return $ Maek ex tp
+    return $ Cast ex tp
 
 variable :: Parser Expr
 variable = do
@@ -142,7 +142,7 @@ castStmt1 = do
     name <- identifier
     reserved "IS NOW A"
     tp <- vtype
-    return $ Maek2 name tp
+    return $ Cast2 name tp
 
 castStmt2 :: Parser Stmt
 castStmt2 = do
@@ -150,7 +150,7 @@ castStmt2 = do
     reserved "R MAEK"
     optional (reserved "A")
     tp <- vtype
-    return $ Maek2 name tp
+    return $ Cast2 name tp
 
 ifStmt :: Parser Stmt
 ifStmt = do
