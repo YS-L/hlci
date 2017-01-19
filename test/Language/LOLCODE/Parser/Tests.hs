@@ -107,6 +107,85 @@ testSmoosh3 = checkExpr code expected
         |]
         expected = [Smoosh [Yarn "CAT", Yarn "SHIBA"]]
 
+testBinOp1 :: Assertion
+testBinOp1 = checkExpr code expected
+    where
+        code = [r|
+        SUM OF x AN y       BTW +
+        DIFF OF x AN y      BTW -
+        PRODUKT OF x AN y   BTW *
+        QUOSHUNT OF x AN y  BTW /
+        MOD OF x AN y       BTW modulo
+        BIGGR OF x AN y     BTW max
+        SMALLR OF x AN y    BTW min
+        |]
+        expected = [ BinOp Sum (Var "x") (Var "y")
+                   , BinOp Diff (Var "x") (Var "y")
+                   , BinOp Produkt (Var "x") (Var "y")
+                   , BinOp Quoshunt (Var "x") (Var "y")
+                   , BinOp Mod (Var "x") (Var "y")
+                   , BinOp Biggr (Var "x") (Var "y")
+                   , BinOp Smallr (Var "x") (Var "y")
+                   ]
+
+testBinOp2 :: Assertion
+testBinOp2 = checkExpr code expected
+    where
+        code = [r|
+        BOTH OF x AN y          BTW and: WIN iff x=WIN, y=WIN
+        EITHER OF x AN y        BTW or: FAIL iff x=FAIL, y=FAIL
+        WON OF x AN y           BTW xor: FAIL if x=y
+        |]
+        expected = [ BinOp Both (Var "x") (Var "y")
+                   , BinOp Either (Var "x") (Var "y")
+                   , BinOp Won (Var "x") (Var "y")
+                   ]
+
+testBinOp3 :: Assertion
+testBinOp3 = checkExpr code expected
+    where
+        code = [r|
+        BOTH SAEM x AN y   BTW WIN iff x == y
+        DIFFRINT x AN y    BTW WIN iff x != y
+        |]
+        expected = [ BinOp Saem (Var "x") (Var "y")
+                   , BinOp Diffrint (Var "x") (Var "y")
+                   ]
+
+testNaryOp :: Assertion
+testNaryOp = checkExpr code expected
+    where
+        code = [r|
+        ALL OF x AN y AN z MKAY  BTW infinite arity AND
+        ANY OF x y z MKAY  BTW infinite arity OR
+        |]
+        expected = [ NaryOp All [(Var "x"), (Var "y"), (Var "z")]
+                   , NaryOp Any [(Var "x"), (Var "y"), (Var "z")]
+                   ]
+
+testComposedOp :: Assertion
+testComposedOp = checkExpr code expected
+    where
+        code = [r|
+        BOTH SAEM x AN BIGGR OF x AN y   BTW x >= y
+        BOTH SAEM x AN SMALLR OF x AN y  BTW x <= y
+        DIFFRINT x AN SMALLR OF x AN y   BTW x > y
+        DIFFRINT x AN BIGGR OF x AN y    BTW x < y
+        |]
+        expected = [ BinOp Saem (Var "x") (BinOp Biggr (Var "x") (Var "y"))
+                   , BinOp Saem (Var "x") (BinOp Smallr (Var "x") (Var "y"))
+                   , BinOp Diffrint (Var "x") (BinOp Smallr (Var "x") (Var "y"))
+                   , BinOp Diffrint (Var "x") (BinOp Biggr (Var "x") (Var "y"))
+                   ]
+
+testNot :: Assertion
+testNot = checkExpr code expected
+    where
+        code = [r|
+        NOT x    BTW unary negation: WIN if x=FAIL
+        |]
+        expected = [Not (Var "x")]
+
 testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
@@ -221,6 +300,12 @@ tests = testGroup "Parser"
     , testCase "testSmoosh1" testSmoosh1
     , testCase "testSmoosh2" testSmoosh2
     , testCase "testSmoosh3" testSmoosh3
+    , testCase "testBinOp1" testBinOp1
+    , testCase "testBinOp2" testBinOp2
+    , testCase "testBinOp3" testBinOp3
+    , testCase "testComposedOp" testComposedOp
+    , testCase "testNot" testNot
+    , testCase "testNaryOp" testNaryOp
     , testCase "testAssign" testAssign
     , testCase "testDeclare1" testDeclare1
     , testCase "testDeclare2" testDeclare2

@@ -20,6 +20,11 @@ factor = try numbar
       <|> try variable
       <|> try cast
       <|> try smoosh
+      <|> try binaryOp1
+      <|> try binaryOp2
+      <|> try binaryOp3
+      <|> try naryOp
+      <|> try notOp
       <|> parens expr
 
 expr :: Parser Expr
@@ -98,6 +103,74 @@ smoosh = do
     exprs <- sepBy expr (optional $ reserved "AN")
     optional $ reserved "MKAY"
     return $ Smoosh exprs
+
+binaryOp1 :: Parser Expr
+binaryOp1 = do
+    op <- (try $ symbol "SUM")
+      <|> (try $ symbol "DIFF")
+      <|> (try $ symbol "PRODUKT")
+      <|> (try $ symbol "QUOSHUNT")
+      <|> (try $ symbol "MOD")
+      <|> (try $ symbol "BIGGR")
+      <|> (try $ symbol "SMALLR")
+    let op' = case op of
+            "SUM" -> Sum
+            "DIFF" -> Diff
+            "PRODUKT" -> Produkt
+            "QUOSHUNT" -> Quoshunt
+            "MOD" -> Mod
+            "BIGGR" -> Biggr
+            "SMALLR" -> Smallr
+    reserved "OF"
+    a <- expr
+    reserved "AN"
+    b <- expr
+    return $ BinOp op' a b
+
+binaryOp2 :: Parser Expr
+binaryOp2 = do
+    op <- (try $ symbol "BOTH")
+      <|> (try $ symbol "EITHER")
+      <|> (try $ symbol "WON")
+    let op' = case op of
+            "BOTH" -> Both
+            "EITHER" -> Either
+            "WON" -> Won
+    reserved "OF"
+    a <- expr
+    optional $ reserved "AN"
+    b <- expr
+    return $ BinOp op' a b
+
+binaryOp3 :: Parser Expr
+binaryOp3 = do
+    op <- (try $ symbol "BOTH SAEM")
+      <|> (try $ symbol "DIFFRINT")
+    let op' = case op of
+            "BOTH SAEM" -> Saem
+            "DIFFRINT" -> Diffrint
+    a <- expr
+    optional $ reserved "AN"
+    b <- expr
+    return $ BinOp op' a b
+
+naryOp :: Parser Expr
+naryOp = do
+    op <- (try $ symbol "ALL")
+      <|> (try $ symbol "ANY")
+    let op' = case op of
+            "ALL" -> All
+            "ANY" -> Any
+    reserved "OF"
+    exprs <- sepBy expr (optional $ reserved "AN")
+    reserved "MKAY"
+    return $ NaryOp op' exprs
+
+notOp :: Parser Expr
+notOp = do
+    reserved "NOT"
+    ex <- expr
+    return $ Not ex
 
 statement :: Parser Stmt
 statement =  parens statement

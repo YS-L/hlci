@@ -7,6 +7,7 @@ data Expr
     | Numbar Double
     | Troof Bool
     | Var String
+    | Not Expr
     | BinOp Op Expr Expr
     | NaryOp OpN [Expr]
     | Cast Expr Type
@@ -26,7 +27,6 @@ data Op
     | Both
     | Either
     | Won
-    | Not
     | Saem
     | Diffrint
     deriving (Eq, Ord, Show)
