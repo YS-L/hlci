@@ -48,6 +48,15 @@ eval (Cast (Numbar v) YarnT) = return $ Yarn (show v)
 
 eval (Cast (Yarn v) YarnT) = return $ Yarn v
 
+eval (Cast _ NoobT) = return $ Noob
+
+eval (Cast ex TroofT) = return $ Troof $ case ex of
+    Numbr 0 -> False
+    Numbar 0.0 -> False
+    Yarn "" -> False
+    Troof b -> b
+    _ -> True
+
 eval p@(Function name args body) = return p
 
 eval (Call name exprs) = do
@@ -107,6 +116,10 @@ exec (Print exprs newline) = do
     where unYarn x = case x of
             Yarn s -> s
             _ -> ""
+
+exec (Cast2 name tp) = do
+    ex <- eval (Var name) >>= \x -> eval $ Cast x tp
+    pushLocal name ex
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 

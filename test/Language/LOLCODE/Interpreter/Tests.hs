@@ -92,10 +92,21 @@ testPrint = checkStoreLocal code []
         VISIBLE CAT SHIBA DOGE WOW
         |]
 
+testCastStmt :: Assertion
+testCastStmt = checkStoreLocal code expected
+    where
+        code = [r|
+        I HAS A VAR ITZ 1
+        VAR2 R VAR
+        VAR IS NOW A TROOF
+        |]
+        expected = [("VAR", Troof True), ("VAR2", Numbr 1)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
     , testCase "testCall" testCall
     , testCase "testReturn" testReturn
     , testCase "testPrint" testPrint
+    , testCase "testCastStmt" testCastStmt
     ]
