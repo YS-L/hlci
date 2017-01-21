@@ -162,6 +162,23 @@ testIf4 = checkStoreLocal code expected
         |]
         expected = [("VAR", Numbr 100), ("VAR2", Numbr 101)]
 
+testReturnInSubProgram :: Assertion
+testReturnInSubProgram = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I gimmeh_sword
+            1, O RLY?
+            YA RLY
+                FOUND YR "stick"
+            OIC
+            FOUND YR "SHOULD NOT BE HERE!!1"
+        IF U SAY SO
+
+        I HAS A SWORD ITZ (I IZ gimmeh_sword MKAY)
+        SWORD
+        |]
+        expected = [("IT", Yarn "stick"), ("SWORD", Yarn "stick")]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -173,4 +190,5 @@ tests = testGroup "Interpreter"
     , testCase "testIf2" testIf2
     , testCase "testIf3" testIf3
     , testCase "testIf4" testIf4
+    , testCase "testReturnInSubProgram" testReturnInSubProgram
     ]
