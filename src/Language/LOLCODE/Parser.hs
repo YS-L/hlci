@@ -217,8 +217,7 @@ ifStmt = do
         ex <- expr
         st <- statement
         return $ (ex, st)
-    reserved "NO WAI"
-    no <- statement
+    no <- optionMaybe $ reserved "NO WAI" >> statement
     reserved "OIC"
     return $ If yes maybes no
 

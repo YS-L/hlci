@@ -133,7 +133,9 @@ exec (If yes pairs no) = do
                     _ -> False
     case pair of
         Just (_, s) -> exec s
-        Nothing -> exec no
+        Nothing -> case no of
+            Just p -> exec p
+            Nothing -> return ()
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 

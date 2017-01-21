@@ -51,7 +51,7 @@ data Stmt
     | Assign String Expr
     | Cast2 String Type
     | Return Expr
-    | If Stmt [(Expr, Stmt)] Stmt
+    | If Stmt [(Expr, Stmt)] (Maybe Stmt)
     | Case Stmt [(Expr, Stmt)] Stmt
     | Loop String LoopOp LoopCond Stmt
     | Break

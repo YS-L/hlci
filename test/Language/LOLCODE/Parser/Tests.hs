@@ -215,7 +215,7 @@ testIf = checkStmt code expected
                 a R 2
         OIC
         |]
-        expected = If (Assign "a" (Numbr 1)) [] (Assign "a" (Numbr 2))
+        expected = If (Assign "a" (Numbr 1)) [] (Just (Assign "a" (Numbr 2)))
 
 testIf2 :: Assertion
 testIf2 = checkStmt code expected
@@ -232,7 +232,18 @@ testIf2 = checkStmt code expected
                 a R 2
         OIC
         |]
-        expected = If (Assign "a" (Numbr 1)) [(Var "b", Assign "a" (Numbr 10)), (Var "c", Assign "a" (Numbr 11))] (Assign "a" (Numbr 2))
+        expected = If (Assign "a" (Numbr 1)) [(Var "b", Assign "a" (Numbr 10)), (Var "c", Assign "a" (Numbr 11))] (Just (Assign "a" (Numbr 2)))
+
+testIf3 :: Assertion
+testIf3 = checkStmt code expected
+    where
+        code = [r|
+        O RLY?
+            YA RLY
+                a R 1
+        OIC
+        |]
+        expected = If (Assign "a" (Numbr 1)) [] Nothing
 
 testExprStmt :: Assertion
 testExprStmt = checkStmt "1" (ExprStmt (Numbr 1))
@@ -376,6 +387,7 @@ tests = testGroup "Parser"
     , testCase "testCastStmt2B" testCastStmt2B
     , testCase "testIf" testIf
     , testCase "testIf2" testIf2
+    , testCase "testIf3" testIf3
     , testCase "testExprStmt" testExprStmt
     , testCase "testPrintStmt" testPrintStmt
     , testCase "testPrintStmt2" testPrintStmt2
