@@ -248,19 +248,18 @@ loopStmt = do
     reserved "IM IN YR"
     label <- identifier
     op <- loopOp
-    reserved "YR"
-    var <- identifier
     cond <- loopCond
     prog <- statement
     reserved "IM OUTTA YR"
     label' <- identifier
     -- Check that labels match?
-    return $ Loop label op var cond prog
+    return $ Loop label op cond prog
 
 loopOp :: Parser LoopOp
-loopOp =  ((try $ reserved "UPPIN") >> return Increment)
-      <|> ((try $ reserved "NERFIN") >> return Decrement)
-      <|> ((try identifier) >>= return . UFunc)
+loopOp =  try (reserved "UPPIN" >> reserved "YR" >> identifier >>= return . Increment)
+      <|> try (reserved "NERFIN" >> reserved "YR" >> identifier >>= return . Decrement)
+      <|> try (identifier >>= \f -> reserved "YR" >> identifier >>= return . UFunc f)
+      <|> return Noop
 
 loopCond :: Parser LoopCond
 loopCond =  ((try $ reserved "TIL") >> expr >>= return . Until)

@@ -290,7 +290,7 @@ testLoop1 = checkStmt code expected
             dog R "SHIBA"
         IM OUTTA YR doge
         |]
-        expected = Loop "doge" Increment "cat" (Until (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+        expected = Loop "doge" (Increment "cat") (Until (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
 
 testLoop2 :: Assertion
 testLoop2 = checkStmt code expected
@@ -300,7 +300,7 @@ testLoop2 = checkStmt code expected
             dog R "SHIBA"
         IM OUTTA YR doge
         |]
-        expected = Loop "doge" Decrement "cat" (Until (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+        expected = Loop "doge" (Decrement "cat") (Until (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
 
 testLoop3 :: Assertion
 testLoop3 = checkStmt code expected
@@ -310,7 +310,7 @@ testLoop3 = checkStmt code expected
             dog R "SHIBA"
         IM OUTTA YR doge
         |]
-        expected = Loop "doge" Increment "cat" (While (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+        expected = Loop "doge" (Increment "cat") (While (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
 
 testLoop4 :: Assertion
 testLoop4 = checkStmt code expected
@@ -320,7 +320,7 @@ testLoop4 = checkStmt code expected
             dog R "SHIBA"
         IM OUTTA YR doge
         |]
-        expected = Loop "doge" (UFunc "petting") "cat" (While (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+        expected = Loop "doge" (UFunc "petting" "cat") (While (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
 
 testLoop5 :: Assertion
 testLoop5 = checkStmt code expected
@@ -331,7 +331,18 @@ testLoop5 = checkStmt code expected
             GTFO
         IM OUTTA YR doge
         |]
-        expected = Loop "doge" (UFunc "petting") "cat" Forever (Seq [Assign "dog" (Yarn "SHIBA"), Break])
+        expected = Loop "doge" (UFunc "petting" "cat") Forever (Seq [Assign "dog" (Yarn "SHIBA"), Break])
+
+testLoop6 :: Assertion
+testLoop6 = checkStmt code expected
+    where
+        code = [r|
+        IM IN YR doge
+            dog R "SHIBA"
+            GTFO
+        IM OUTTA YR doge
+        |]
+        expected = Loop "doge" Noop Forever (Seq [Assign "dog" (Yarn "SHIBA"), Break])
 
 tests :: TestTree
 tests = testGroup "Parser"
@@ -377,4 +388,5 @@ tests = testGroup "Parser"
     , testCase "testLoop3" testLoop3
     , testCase "testLoop4" testLoop4
     , testCase "testLoop5" testLoop5
+    , testCase "testLoop6" testLoop6
     ]
