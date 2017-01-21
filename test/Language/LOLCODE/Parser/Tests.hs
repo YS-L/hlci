@@ -282,6 +282,56 @@ testCommaLineBreak = checkStmt code expected
         |]
         expected = Seq [(ExprStmt (Var "a")), (ExprStmt (Var "b")), (ExprStmt (Var "c"))]
 
+testLoop1 :: Assertion
+testLoop1 = checkStmt code expected
+    where
+        code = [r|
+        IM IN YR doge UPPIN YR cat TIL BOTH SAEM cat 0
+            dog R "SHIBA"
+        IM OUTTA YR doge
+        |]
+        expected = Loop "doge" Increment "cat" (Until (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+
+testLoop2 :: Assertion
+testLoop2 = checkStmt code expected
+    where
+        code = [r|
+        IM IN YR doge NERFIN YR cat TIL BOTH SAEM cat 0
+            dog R "SHIBA"
+        IM OUTTA YR doge
+        |]
+        expected = Loop "doge" Decrement "cat" (Until (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+
+testLoop3 :: Assertion
+testLoop3 = checkStmt code expected
+    where
+        code = [r|
+        IM IN YR doge UPPIN YR cat WILE BOTH SAEM cat 0
+            dog R "SHIBA"
+        IM OUTTA YR doge
+        |]
+        expected = Loop "doge" Increment "cat" (While (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+
+testLoop4 :: Assertion
+testLoop4 = checkStmt code expected
+    where
+        code = [r|
+        IM IN YR doge petting YR cat WILE BOTH SAEM cat 0
+            dog R "SHIBA"
+        IM OUTTA YR doge
+        |]
+        expected = Loop "doge" (UFunc "petting") "cat" (While (BinOp Saem (Var "cat") (Numbr 0))) (Assign "dog" (Yarn "SHIBA"))
+
+testLoop5 :: Assertion
+testLoop5 = checkStmt code expected
+    where
+        code = [r|
+        IM IN YR doge petting YR cat
+            dog R "SHIBA"
+        IM OUTTA YR doge
+        |]
+        expected = Loop "doge" (UFunc "petting") "cat" Forever (Assign "dog" (Yarn "SHIBA"))
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -321,4 +371,9 @@ tests = testGroup "Parser"
     , testCase "testComment1" testComment1
     , testCase "testComment2" testComment2
     , testCase "testCommaLineBreak" testCommaLineBreak
+    , testCase "testLoop1" testLoop1
+    , testCase "testLoop2" testLoop2
+    , testCase "testLoop3" testLoop3
+    , testCase "testLoop4" testLoop4
+    , testCase "testLoop5" testLoop5
     ]

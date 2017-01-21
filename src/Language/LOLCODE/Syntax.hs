@@ -53,7 +53,11 @@ data Stmt
     | Return Expr
     | If Stmt [(Expr, Stmt)] Stmt
     | Case Stmt [(Expr, Stmt)] Stmt
-    -- TDOO: Loop
-    | Gtfo
+    | Loop String LoopOp String LoopCond Stmt
+    | Break
     | ExprStmt Expr
     deriving (Eq, Ord, Show)
+
+data LoopOp = Increment | Decrement | UFunc String deriving (Eq, Ord, Show)
+
+data LoopCond = Until Expr | While Expr | Forever deriving (Eq, Ord, Show)

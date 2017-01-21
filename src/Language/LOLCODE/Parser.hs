@@ -173,6 +173,7 @@ statement' =  try assignStmt
           <|> try exprStmt
           <|> try printStmt
           <|> try returnStmt
+          <|> try loopStmt
 
 assignStmt :: Parser Stmt
 assignStmt = do
@@ -237,6 +238,30 @@ printStmt = do
 
 returnStmt :: Parser Stmt
 returnStmt = (reserved "FOUND YR") >> expr >>= (return . Return)
+
+loopStmt :: Parser Stmt
+loopStmt = do
+    reserved "IM IN YR"
+    label <- identifier
+    op <- loopOp
+    reserved "YR"
+    var <- identifier
+    cond <- loopCond
+    prog <- statement
+    reserved "IM OUTTA YR"
+    label' <- identifier
+    -- Check that labels match?
+    return $ Loop label op var cond prog
+
+loopOp :: Parser LoopOp
+loopOp =  ((try $ reserved "UPPIN") >> return Increment)
+      <|> ((try $ reserved "NERFIN") >> return Decrement)
+      <|> ((try identifier) >>= return . UFunc)
+
+loopCond :: Parser LoopCond
+loopCond =  ((try $ reserved "TIL") >> expr >>= return . Until)
+        <|> ((try $ reserved "WILE") >> expr >>= return . While)
+        <|> return Forever
 
 defn :: Parser Expr
 defn =  try function
