@@ -328,9 +328,10 @@ testLoop5 = checkStmt code expected
         code = [r|
         IM IN YR doge petting YR cat
             dog R "SHIBA"
+            GTFO
         IM OUTTA YR doge
         |]
-        expected = Loop "doge" (UFunc "petting") "cat" Forever (Assign "dog" (Yarn "SHIBA"))
+        expected = Loop "doge" (UFunc "petting") "cat" Forever (Seq [Assign "dog" (Yarn "SHIBA"), Break])
 
 tests :: TestTree
 tests = testGroup "Parser"

@@ -174,6 +174,7 @@ statement' =  try assignStmt
           <|> try printStmt
           <|> try returnStmt
           <|> try loopStmt
+          <|> try breakStmt
 
 assignStmt :: Parser Stmt
 assignStmt = do
@@ -238,6 +239,9 @@ printStmt = do
 
 returnStmt :: Parser Stmt
 returnStmt = (reserved "FOUND YR") >> expr >>= (return . Return)
+
+breakStmt :: Parser Stmt
+breakStmt = (reserved "GTFO") >> (return Break)
 
 loopStmt :: Parser Stmt
 loopStmt = do
