@@ -355,6 +355,35 @@ testLoop6 = checkStmt code expected
         |]
         expected = Loop "doge" Noop Forever (Seq [Assign "dog" (Yarn "SHIBA"), Break])
 
+testSwitch1 :: Assertion
+testSwitch1 = checkStmt code expected
+    where
+        code = [r|
+        WTF?
+          OMG "R"
+            1
+          OMG "B"
+            2
+          OMGWTF
+            3
+        OIC
+        |]
+        expected = Case [(Yarn "R", ExprStmt (Numbr 1)), (Yarn "B", ExprStmt (Numbr 2))] (Just (ExprStmt (Numbr 3)))
+
+testSwitch2 :: Assertion
+testSwitch2 = checkStmt code expected
+    where
+        code = [r|
+        WTF?
+          OMG "R"
+            1
+          OMG "B"
+          OMGWTF
+            3
+        OIC
+        |]
+        expected = Case [(Yarn "R", ExprStmt (Numbr 1)), (Yarn "B", Seq [])] (Just (ExprStmt (Numbr 3)))
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -401,4 +430,6 @@ tests = testGroup "Parser"
     , testCase "testLoop4" testLoop4
     , testCase "testLoop5" testLoop5
     , testCase "testLoop6" testLoop6
+    , testCase "testSwitch1" testSwitch1
+    , testCase "testSwitch2" testSwitch2
     ]

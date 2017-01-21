@@ -52,7 +52,7 @@ data Stmt
     | Cast2 String Type
     | Return Expr
     | If Stmt [(Expr, Stmt)] (Maybe Stmt)
-    | Case Stmt [(Expr, Stmt)] Stmt
+    | Case [(Expr, Stmt)] (Maybe Stmt)
     | Loop String LoopOp LoopCond Stmt
     | Break
     | ExprStmt Expr

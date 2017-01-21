@@ -175,6 +175,7 @@ statement' =  try assignStmt
           <|> try returnStmt
           <|> try loopStmt
           <|> try breakStmt
+          <|> try caseStmt
 
 assignStmt :: Parser Stmt
 assignStmt = do
@@ -264,6 +265,24 @@ loopCond :: Parser LoopCond
 loopCond =  ((try $ reserved "TIL") >> expr >>= return . Until)
         <|> ((try $ reserved "WILE") >> expr >>= return . While)
         <|> return Forever
+
+caseStmt :: Parser Stmt
+caseStmt = do
+    reserved "WTF?"
+    conds <- many $ (do
+        reserved "OMG"
+        cond <- valueLiteral
+        prog <- statement
+        return (cond, prog))
+    p <- reserved "OMGWTF" >> optionMaybe statement
+    reserved "OIC"
+    return $ Case conds p
+
+valueLiteral :: Parser Expr
+valueLiteral = try numbar
+            <|> try numbr
+            <|> try troof
+            <|> try yarn
 
 defn :: Parser Expr
 defn =  try function
