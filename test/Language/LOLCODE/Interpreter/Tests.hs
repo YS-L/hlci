@@ -448,6 +448,68 @@ testOpNot = checkStoreLocal code expected
                    , ("v4", Troof True)
                    , ("v5", Troof False)]
 
+testBreakFromFunction :: Assertion
+testBreakFromFunction = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+            1, O RLY?
+            YA RLY
+                GTFO
+                FOUND YR "SHOULD NOT BE HERE!!1"
+            OIC
+        IF U SAY SO
+
+        I HAS A var ITZ (I IZ foo MKAY)
+        |]
+        expected = [("var", Noob)]
+
+testSwitch1 :: Assertion
+testSwitch1 = checkStoreLocal code expected
+    where
+        code = [r|
+        color R "G"
+        I HAS A var
+
+        color, WTF?
+          OMG "R"
+            var R "RED FISH"
+            GTFO
+          OMG "Y"
+            var R "YELLOW FISH"
+          OMG "G"
+          OMG "B"
+            var R "FISH HAS A FLAVOR"
+            GTFO
+          OMGWTF
+            var R "FISH IS TRANSPARENT"
+        OIC
+        |]
+        expected = [("var", Yarn "FISH HAS A FLAVOR")]
+
+testSwitch2 :: Assertion
+testSwitch2 = checkStoreLocal code expected
+    where
+        code = [r|
+        color R "LOOOL"
+        I HAS A var
+
+        color, WTF?
+          OMG "R"
+            var R "RED FISH"
+            GTFO
+          OMG "Y"
+            var R "YELLOW FISH"
+          OMG "G"
+          OMG "B"
+            var R "FISH HAS A FLAVOR"
+            GTFO
+          OMGWTF
+            var R "FISH IS TRANSPARENT"
+        OIC
+        |]
+        expected = [("var", Yarn "FISH IS TRANSPARENT")]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -476,4 +538,7 @@ tests = testGroup "Interpreter"
     , testCase "testOpAll" testOpAll
     , testCase "testOpAny" testOpAny
     , testCase "testOpNot" testOpNot
+    , testCase "testBreakFromFunction" testBreakFromFunction
+    , testCase "testSwitch1" testSwitch1
+    , testCase "testSwitch2" testSwitch2
     ]

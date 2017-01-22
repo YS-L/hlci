@@ -12,6 +12,9 @@ data Env = Env { globals      :: Store
                , locals       :: Store
                , return_id    :: Int
                , return_token :: Int
+               , break_id     :: Int
+               , break_token  :: Int
+               , breakable    :: Bool
                } deriving (Eq, Ord, Show)
 
 type Interp a = StateT Env IO a
@@ -87,20 +90,14 @@ eval (Call name exprs) = do
     case func of
         Function _ args prog -> do
             env <- get
-            let current_locals = locals env
-                current_id = return_id env
-                locals' = zip args exprs ++ [("IT", Noob)]
-                return_id' = current_id + 1
+            let locals' = zip args exprs ++ [("IT", Noob)]
             put $ env { locals = locals'
-                      , return_id = return_id'
+                      , return_id = return_id env + 1
                       , return_token = 0
                       }
             exec prog
             ret <- lookupEnv locals "IT"
-            put $ env { locals = current_locals
-                      , return_id = current_id
-                      , return_token = 0
-                      }
+            put $ env { return_token = 0 }
             return ret
         _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
 
@@ -244,7 +241,10 @@ exec (Seq (s:ss)) = do
     if (return_token env) == (return_id env) then
         return ()
     else
-        exec (Seq ss)
+        if (break_token env) == (break_id env) then
+            return ()
+        else
+            exec (Seq ss)
 
 exec (Assign name ex) = do
     ex' <- eval ex
@@ -263,6 +263,15 @@ exec (Return ex) = do
     pushLocal "IT" ex'
     env <- get
     put $ env { return_token = return_id env }
+
+exec Break = do
+    env <- get
+    if breakable env then do
+        put $ env { break_token = break_id env }
+    else do
+        pushLocal "IT" Noob
+        env <- get
+        put $ env { return_token = return_id env }
 
 exec (Print exprs newline) = do
     Yarn s <- eval $ Smoosh exprs
@@ -291,6 +300,37 @@ exec (If yes pairs no) = do
             Just p -> exec p
             Nothing -> return ()
 
+exec (Case pairs defc) = do
+    let exprs = map fst pairs
+        progs = map snd pairs
+        parts = map (\i -> Seq $ drop i progs) [0..(length progs - 1)]
+    ref <- lookupEnv locals "IT"
+    conds <- mapM (\x -> eval (BinOp Saem x ref)) exprs
+    let pair = find (unTroof . fst) $ zip conds parts
+            where
+                unTroof x = case x of
+                    Troof True -> True
+                    _ -> False
+    case pair of
+        Just (_, s) -> do
+            env <- get
+            put $ env { break_id = (break_id env) + 1
+                      , break_token = 0
+                      , breakable = True }
+            exec s
+            env' <- get
+            put env { locals = (locals env') ++ (locals env) }
+        Nothing -> case defc of
+            Just p -> do
+                env <- get
+                put $ env { break_id = (break_id env) + 1
+                          , break_token = 0
+                          , breakable = True }
+                exec p
+                env' <- get
+                put env { locals = (locals env') ++ (locals env) }
+            Nothing -> return ()
+
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 
 globalFunctions :: Stmt -> Store
@@ -313,6 +353,9 @@ emptyEnv = Env { globals = []
                , locals = []
                , return_id = 1
                , return_token = 0
+               , break_id = 1
+               , break_token = 0
+               , breakable = False
                }
 
 initEnv :: Stmt -> Env
