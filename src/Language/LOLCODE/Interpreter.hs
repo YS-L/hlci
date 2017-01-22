@@ -8,8 +8,10 @@ import           Language.LOLCODE.Syntax
 
 type Store = [(String, Expr)]
 
-data Env = Env { globals :: Store
-               , locals  :: Store
+data Env = Env { globals      :: Store
+               , locals       :: Store
+               , return_id    :: Int
+               , return_token :: Int
                } deriving (Eq, Ord, Show)
 
 type Interp a = StateT Env IO a
@@ -64,14 +66,30 @@ eval (Call name exprs) = do
     case func of
         Function _ args prog -> do
             env <- get
-            let current = locals env
+            let current_locals = locals env
+                current_id = return_id env
                 locals' = zip args exprs ++ [("IT", Noob)]
-            put $ env { locals = locals' }
+                return_id' = current_id + 1
+            put $ env { locals = locals'
+                      , return_id = return_id'
+                      , return_token = 0
+                      }
             exec prog
             ret <- lookupEnv locals "IT"
-            put $ env { locals = current }
+            put $ env { locals = current_locals
+                      , return_id = current_id
+                      , return_token = 0
+                      }
             return ret
         _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
+
+eval (Smoosh exprs) = do
+    exprs' <- mapM eval exprs
+    strings <- mapM (\ex -> liftM unYarn $ eval $ Cast ex YarnT) exprs'
+    return $ Yarn $ intercalate "" strings
+    where unYarn x = case x of
+            Yarn s -> s
+            _ -> ""
 
 eval p@_ = fail $ "Expression not implemented: " ++ show p
 
@@ -86,9 +104,11 @@ exec (Seq []) = return ()
 
 exec (Seq (s:ss)) = do
     exec s
-    case s of
-        Return _ -> return ()
-        _ -> exec (Seq ss)
+    env <- get
+    if (return_token env) == (return_id env) then
+        return ()
+    else
+        exec (Seq ss)
 
 exec (Assign name ex) = do
     ex' <- eval ex
@@ -105,17 +125,15 @@ exec (ExprStmt ex) = do
 exec (Return ex) = do
     ex' <- eval ex
     pushLocal "IT" ex'
+    env <- get
+    put $ env { return_token = return_id env }
 
 exec (Print exprs newline) = do
-    exprs' <- mapM eval exprs
-    strings <- mapM (\ex -> liftM unYarn $ eval $ Cast ex YarnT) exprs'
-    liftIO $ putStr $ intercalate "" strings
+    Yarn s <- eval $ Smoosh exprs
+    liftIO $ putStr $ s
     case newline of
         True -> liftIO $ putStr "\n"
         _ -> return ()
-    where unYarn x = case x of
-            Yarn s -> s
-            _ -> ""
 
 exec (Cast2 name tp) = do
     ex <- lookupEnv locals name >>= \x -> eval $ Cast x tp
@@ -154,10 +172,17 @@ globalFunctions prog = case prog of
 initGlobals :: Stmt -> Store
 initGlobals prog = globalFunctions prog
 
+emptyEnv :: Env
+emptyEnv = Env { globals = []
+               , locals = []
+               , return_id = 1
+               , return_token = 0
+               }
+
 initEnv :: Stmt -> Env
-initEnv prog = Env { globals = initGlobals prog
-                   , locals = []
-                   }
+initEnv prog = emptyEnv { globals = initGlobals prog
+                        , locals = []
+                        }
 
 cleanup :: Store -> Store
 cleanup store = nubBy (\a b -> fst a == fst b) store

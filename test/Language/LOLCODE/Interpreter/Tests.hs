@@ -46,11 +46,11 @@ testInitEnv = checkRun code expected
         I HAS A SHIBA ITZ 1
         SHIBA
         |]
-        expected = Env { globals = [ ("attack", Function "attack" [] (Assign "SWORD" (Numbr 100)))
-                                   , ("defend", Function "defend" [] (Assign "ARMOR" (Numbr 100)))
-                                   ]
-                       , locals = [("IT", Numbr 1), ("SHIBA", Numbr 1)]
-                       }
+        expected = emptyEnv { globals = [ ("attack", Function "attack" [] (Assign "SWORD" (Numbr 100)))
+                                        , ("defend", Function "defend" [] (Assign "ARMOR" (Numbr 100)))
+                                        ]
+                            , locals = [("IT", Numbr 1), ("SHIBA", Numbr 1)]
+                            }
 
 testCall :: Assertion
 testCall = checkStoreLocal code expected
@@ -179,6 +179,41 @@ testReturnInSubProgram = checkStoreLocal code expected
         |]
         expected = [("IT", Yarn "stick"), ("SWORD", Yarn "stick")]
 
+testReturnInSubProgram2 :: Assertion
+testReturnInSubProgram2 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I gimmeh_sword
+            1, O RLY?
+            YA RLY
+                FOUND YR "stick"
+            OIC
+            FOUND YR "SHOULD NOT BE HERE!!1"
+        IF U SAY SO
+
+        HOW IZ I gimmeh_shield
+            1, O RLY?
+            YA RLY
+                FOUND YR "board"
+            OIC
+            FOUND YR "SHOULD NOT BE HERE!!1"
+        IF U SAY SO
+
+        HOW IZ I gimmeh_thingz
+            0, O RLY?
+            YA RLY
+                FOUND YR "SHOULD NOT BE HERE!!1"
+            NO WAI
+                I HAS A SWORD ITZ (I IZ gimmeh_sword MKAY)
+                I HAS A SHIELD ITZ (I IZ gimmeh_shield MKAY)
+            OIC
+            FOUND YR (SMOOSH SWORD "_" SHIELD MKAY)
+        IF U SAY SO
+
+        I HAS A THINGZ ITZ (I IZ gimmeh_thingz MKAY)
+        |]
+        expected = [("THINGZ", Yarn "stick_board")]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -191,4 +226,5 @@ tests = testGroup "Interpreter"
     , testCase "testIf3" testIf3
     , testCase "testIf4" testIf4
     , testCase "testReturnInSubProgram" testReturnInSubProgram
+    , testCase "testReturnInSubProgram2" testReturnInSubProgram2
     ]
