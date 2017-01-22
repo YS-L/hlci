@@ -101,6 +101,7 @@ eval (Call name exprs) = do
             exec prog
             ret <- lookupEnv locals "IT"
             env' <- get
+            --liftIO $ putStrLn $ "env after ----> " ++ show env'
             put $ env' { locals = locals env
                        , return_id = return_id env
                        , return_token = 0

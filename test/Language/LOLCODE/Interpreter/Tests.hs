@@ -681,7 +681,6 @@ testRecursiveFunction = checkStoreLocal code expected
     where
         code = [r|
         HOW IZ I fiboz YR n
-            VISIBLE n
 
             BOTH SAEM n 2, O RLY?
             YA RLY
@@ -701,9 +700,16 @@ testRecursiveFunction = checkStoreLocal code expected
             FOUND YR (SUM OF v1 v2)
         IF U SAY SO
 
-        out R (I IZ fiboz YR 3 MKAY)
+        n3 R (I IZ fiboz YR 3 MKAY)
+        n4 R (I IZ fiboz YR 4 MKAY)
+        n5 R (I IZ fiboz YR 5 MKAY)
+        n10 R (I IZ fiboz YR 10 MKAY)
         |]
-        expected = [("out", Numbr 2)]
+        expected = [ ("n3", Numbr 2)
+                   , ("n4", Numbr 3)
+                   , ("n5", Numbr 5)
+                   , ("n10", Numbr 55)
+                   ]
 
 tests :: TestTree
 tests = testGroup "Interpreter"
