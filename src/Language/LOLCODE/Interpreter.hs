@@ -90,17 +90,21 @@ eval (Call name exprs) = do
     case func of
         Function _ args prog -> do
             env <- get
-            let locals' = zip args exprs ++ [("IT", Noob)]
+            exprs' <- mapM eval exprs
+            let locals' = zip args exprs' ++ [("IT", Noob)]
             put $ env { locals = locals'
                       , return_id = return_id env + 1
                       , return_token = 0
+                      --, return_token = return_id env
                       }
+            --liftIO $ putStrLn $ "calling into ----> " ++ show (return_id env + 1)
             exec prog
             ret <- lookupEnv locals "IT"
             env' <- get
             put $ env' { locals = locals env
                        , return_id = return_id env
                        , return_token = 0
+                       --, return_token = return_token env
                        }
             return ret
         _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
@@ -204,6 +208,7 @@ evalNumeric ex = do
         p@(Yarn s) -> if '.' `elem` s
             then eval (Cast p NumbarT)
             else eval (Cast p NumbrT)
+        p@_ -> fail $ "Cannot be converted to numeric: " ++ show p
 
 getNumericPair :: Expr -> Expr -> Interp (Expr, Expr)
 getNumericPair x y = do

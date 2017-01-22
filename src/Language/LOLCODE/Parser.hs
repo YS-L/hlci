@@ -274,7 +274,7 @@ caseStmt = do
         cond <- valueLiteral
         prog <- statement
         return (cond, prog))
-    p <- reserved "OMGWTF" >> optionMaybe statement
+    p <- optionMaybe (reserved "OMGWTF" >> statement)
     reserved "OIC"
     return $ Case conds p
 

@@ -599,6 +599,112 @@ testSwitch5 = checkStoreLocal code expected
         |]
         expected = [("out", Yarn "CORRECT")]
 
+testNestedFunction :: Assertion
+testNestedFunction = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+            1, O RLY?
+            YA RLY
+                FOUND YR (SUM OF 1 (I IZ bar MKAY))
+            OIC
+        IF U SAY SO
+
+        HOW IZ I bar
+            1, O RLY?
+            YA RLY
+                FOUND YR 1
+            OIC
+        IF U SAY SO
+
+        out R (I IZ foo MKAY)
+        |]
+        expected = [("out", Numbr 2)]
+
+testNestedFunctionWithCase1 :: Assertion
+testNestedFunctionWithCase1 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+            1, O RLY?
+            YA RLY
+                "A", WTF?
+                OMG "A"
+                    FOUND YR (SUM OF 1 (I IZ bar MKAY))
+                OIC
+            OIC
+        IF U SAY SO
+
+        HOW IZ I bar
+            1, O RLY?
+            YA RLY
+                FOUND YR 1
+            OIC
+        IF U SAY SO
+
+        out R (I IZ foo MKAY)
+        |]
+        expected = [("out", Numbr 2)]
+
+testNestedFunctionWithCase2 :: Assertion
+testNestedFunctionWithCase2 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+            1, O RLY?
+            YA RLY
+                "A", WTF?
+                OMG "A"
+                    FOUND YR (SUM OF 1 (I IZ bar MKAY))
+                OIC
+            OIC
+        IF U SAY SO
+
+        HOW IZ I bar
+            1, O RLY?
+            YA RLY
+                "B", WTF?
+                OMG "A"
+                    FOUND YR "WRONG"
+                OMGWTF
+                    FOUND YR 1
+                OIC
+            OIC
+        IF U SAY SO
+
+        out R (I IZ foo MKAY)
+        |]
+        expected = [("out", Numbr 2)]
+
+testRecursiveFunction :: Assertion
+testRecursiveFunction = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I fiboz YR n
+            VISIBLE n
+
+            BOTH SAEM n 2, O RLY?
+            YA RLY
+                FOUND YR 1
+            OIC
+
+            BOTH SAEM n 1, O RLY?
+            YA RLY
+                FOUND YR 1
+            OIC
+
+            v1 R (I IZ fiboz YR (DIFF OF n 1) MKAY)
+            BTW v1 R 0
+            v2 R (I IZ fiboz YR (DIFF OF n 2) MKAY)
+            BTW v2 R 0
+
+            FOUND YR (SUM OF v1 v2)
+        IF U SAY SO
+
+        out R (I IZ fiboz YR 3 MKAY)
+        |]
+        expected = [("out", Numbr 2)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -633,4 +739,8 @@ tests = testGroup "Interpreter"
     , testCase "testSwitch3" testSwitch3
     , testCase "testSwitch4" testSwitch4
     , testCase "testSwitch5" testSwitch5
+    , testCase "testNestedFunction" testNestedFunction
+    , testCase "testNestedFunctionWithCase1" testNestedFunctionWithCase1
+    , testCase "testNestedFunctionWithCase2" testNestedFunctionWithCase2
+    , testCase "testRecursiveFunction" testRecursiveFunction
     ]
