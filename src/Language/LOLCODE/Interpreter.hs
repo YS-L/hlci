@@ -53,11 +53,32 @@ eval (Cast (Yarn v) YarnT) = return $ Yarn v
 eval (Cast _ NoobT) = return $ Noob
 
 eval (Cast ex TroofT) = return $ Troof $ case ex of
+    Noob -> False
     Numbr 0 -> False
     Numbar 0.0 -> False
     Yarn "" -> False
     Troof b -> b
     _ -> True
+
+eval (Cast ex NumbrT) = case ex of
+    Numbr v -> return $ Numbr v
+    Numbar v -> return $ Numbr $ truncate (v :: Double)
+    Troof True -> return $ Numbr 1
+    Troof False -> return $ Numbr 0
+    Yarn s -> return $ Numbr $ truncate (read s :: Double)
+    p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbr"
+
+eval (Cast ex NumbarT) = case ex of
+    Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
+    Numbar v -> return $ Numbar v
+    Troof True -> return $ Numbar 1.0
+    Troof False -> return $ Numbar 0.0
+    Yarn s -> return $ Numbar $ (read s :: Double)
+    p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbar"
+
+eval (Cast p@_ vtype) = do
+    ex <- eval p
+    eval $ Cast ex vtype
 
 eval p@(Function name args body) = return p
 
@@ -91,7 +112,122 @@ eval (Smoosh exprs) = do
             Yarn s -> s
             _ -> ""
 
+eval (Not ex) = do
+    Troof v <- eval (Cast ex TroofT)
+    return $ Troof $ not v
+
+eval (BinOp Sum x y) = do
+    (x', y') <- getNumericPair x y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Numbr (a + b)
+            op (Numbar a) (Numbar b) = Numbar (a + b)
+
+eval (BinOp Diff x y) = do
+    (x', y') <- getNumericPair x y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Numbr (a - b)
+            op (Numbar a) (Numbar b) = Numbar (a - b)
+
+eval (BinOp Produkt x y) = do
+    (x', y') <- getNumericPair x y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Numbr (a * b)
+            op (Numbar a) (Numbar b) = Numbar (a * b)
+
+eval (BinOp Quoshunt x y) = do
+    (x', y') <- getNumericPair x y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Numbr (a `div` b)
+            op (Numbar a) (Numbar b) = Numbar (a / b)
+
+eval (BinOp Mod x y) = do
+    (x', y') <- getNumericPair x y
+    op x' y'
+        where
+            op (Numbr a) (Numbr b) = return $ Numbr (a `mod` b)
+            op (Numbar a) (Numbar b) = fail "MOD not supported for NUMBAR"
+
+eval (BinOp Biggr x y) = do
+    (x', y') <- getNumericPair x y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Numbr (max a b)
+            op (Numbar a) (Numbar b) = Numbar (max a b)
+
+eval (BinOp Smallr x y) = do
+    (x', y') <- getNumericPair x y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Numbr (min a b)
+            op (Numbar a) (Numbar b) = Numbar (min a b)
+
+eval (BinOp Both x y) = evalBoolOp (&&) x y
+
+eval (BinOp Either x y) = evalBoolOp (||) x y
+
+eval (BinOp Won x y) = evalBoolOp (\p q -> (p || q) && (not (p && q))) x y
+
+eval (BinOp Saem x y) = do
+    x' <- eval x
+    y' <- eval y
+    return $ op x' y'
+        where
+            op (Numbr a) (Numbr b) = Troof (a == b)
+            op (Numbr a) (Numbar b) = Troof (toDouble a == b)
+            op (Numbar a) (Numbr b) = Troof (a == toDouble b)
+            op (Numbar a) (Numbar b) = Troof (a == b)
+            op p@_ q@_ = Troof (p == q)
+            toDouble v = fromIntegral v :: Double
+
+eval (BinOp Diffrint x y) = do
+    Troof same <- eval (BinOp Saem x y)
+    return $ Troof $ not same
+
+eval (NaryOp All exprs) = evalBoolOpFold and exprs
+
+eval (NaryOp Any exprs) = evalBoolOpFold or exprs
+
 eval p@_ = fail $ "Expression not implemented: " ++ show p
+
+evalNumeric :: Expr -> Interp Expr
+evalNumeric ex = do
+    ex' <- eval ex
+    case ex' of
+        p@(Numbr _) -> return p
+        p@(Numbar _) -> return p
+        p@(Troof _) -> eval (Cast p TroofT)
+        p@(Yarn s) -> if '.' `elem` s
+            then eval (Cast p NumbarT)
+            else eval (Cast p NumbrT)
+
+getNumericPair :: Expr -> Expr -> Interp (Expr, Expr)
+getNumericPair x y = do
+    x' <- evalNumeric x
+    y' <- evalNumeric y
+    f x' y'
+        where
+            f p@(Numbr _) q@(Numbar _) = eval (Cast p NumbarT) >>= (\p' -> return (p', q))
+            f p@(Numbar _) q@(Numbr _) = eval (Cast q NumbarT) >>= (\q' -> return (p, q'))
+            f p@_ q@_ = return (p, q)
+
+evalBoolOp :: (Bool -> Bool -> Bool) -> Expr -> Expr -> Interp Expr
+evalBoolOp f x y = do
+    Troof x' <- eval (Cast x TroofT)
+    Troof y' <- eval (Cast y TroofT)
+    return $ Troof $ f x' y'
+
+evalBoolOpFold :: ([Bool] -> Bool) -> [Expr] -> Interp Expr
+evalBoolOpFold f exprs = do
+    bools <- mapM (\x -> liftM unTroof $ eval (Cast x TroofT)) exprs
+    return $ Troof $ f bools
+        where
+            unTroof x = case x of
+                Troof True -> True
+                _ -> False
 
 exec :: Stmt -> Interp ()
 

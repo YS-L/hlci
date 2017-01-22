@@ -214,6 +214,240 @@ testReturnInSubProgram2 = checkStoreLocal code expected
         |]
         expected = [("THINGZ", Yarn "stick_board")]
 
+testOpSum :: Assertion
+testOpSum = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R SUM OF 1 1
+        v2 R SUM OF 1 1.0
+        v3 R SUM OF 1.0 1
+        v4 R SUM OF "1" 1
+        v5 R SUM OF 1.0 "1"
+        |]
+        expected = [ ("v1", Numbr 2)
+                   , ("v2", Numbar 2.0)
+                   , ("v3", Numbar 2.0)
+                   , ("v4", Numbr 2)
+                   , ("v5", Numbar 2.0)]
+
+testOpDiff :: Assertion
+testOpDiff = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R DIFF OF 1 1
+        v2 R DIFF OF 1 1.0
+        v3 R DIFF OF 1.0 1
+        v4 R DIFF OF "1" 1
+        v5 R DIFF OF 1.0 "1"
+        |]
+        expected = [ ("v1", Numbr 0)
+                   , ("v2", Numbar 0.0)
+                   , ("v3", Numbar 0.0)
+                   , ("v4", Numbr 0)
+                   , ("v5", Numbar 0.0)]
+
+testOpProd :: Assertion
+testOpProd = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R PRODUKT OF 1 1
+        v2 R PRODUKT OF 1 1.0
+        v3 R PRODUKT OF 1.0 1
+        v4 R PRODUKT OF "1" 1
+        v5 R PRODUKT OF 1.0 "1"
+        |]
+        expected = [ ("v1", Numbr 1)
+                   , ("v2", Numbar 1.0)
+                   , ("v3", Numbar 1.0)
+                   , ("v4", Numbr 1)
+                   , ("v5", Numbar 1.0)]
+
+testOpQuoshunt :: Assertion
+testOpQuoshunt = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R QUOSHUNT OF 5 2
+        v2 R QUOSHUNT OF 5 2.0
+        v3 R QUOSHUNT OF 5.0 2
+        v4 R QUOSHUNT OF "5" 2
+        v5 R QUOSHUNT OF 5.0 "2"
+        |]
+        expected = [ ("v1", Numbr 2)
+                   , ("v2", Numbar 2.5)
+                   , ("v3", Numbar 2.5)
+                   , ("v4", Numbr 2)
+                   , ("v5", Numbar 2.5)]
+
+testOpMod :: Assertion
+testOpMod = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R MOD OF 5 2
+        v4 R MOD OF "5" 2
+        |]
+        expected = [ ("v1", Numbr 1)
+                   , ("v4", Numbr 1)]
+
+testOpBiggr :: Assertion
+testOpBiggr = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R BIGGR OF 5 2
+        v2 R BIGGR OF 5 2.0
+        v3 R BIGGR OF 5.0 2
+        v4 R BIGGR OF "5" 2
+        v5 R BIGGR OF 5.0 "2"
+        |]
+        expected = [ ("v1", Numbr 5)
+                   , ("v2", Numbar 5.0)
+                   , ("v3", Numbar 5.0)
+                   , ("v4", Numbr 5)
+                   , ("v5", Numbar 5.0)]
+
+testOpSmallr :: Assertion
+testOpSmallr = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R SMALLR OF 5 2
+        v2 R SMALLR OF 5 2.0
+        v3 R SMALLR OF 5.0 2
+        v4 R SMALLR OF "5" 2
+        v5 R SMALLR OF 5.0 "2"
+        |]
+        expected = [ ("v1", Numbr 2)
+                   , ("v2", Numbar 2.0)
+                   , ("v3", Numbar 2.0)
+                   , ("v4", Numbr 2)
+                   , ("v5", Numbar 2.0)]
+
+testOpBoth :: Assertion
+testOpBoth = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R BOTH OF WIN WIN
+        v2 R BOTH OF WIN FAIL
+        v3 R BOTH OF FAIL WIN
+        v4 R BOTH OF FAIL FAIL
+        v5 R BOTH OF 5 2.0
+        |]
+        expected = [ ("v1", Troof True)
+                   , ("v2", Troof False)
+                   , ("v3", Troof False)
+                   , ("v4", Troof False)
+                   , ("v5", Troof True)]
+
+testOpEither :: Assertion
+testOpEither = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R EITHER OF WIN WIN
+        v2 R EITHER OF WIN FAIL
+        v3 R EITHER OF FAIL WIN
+        v4 R EITHER OF FAIL FAIL
+        v5 R EITHER OF 5 2.0
+        |]
+        expected = [ ("v1", Troof True)
+                   , ("v2", Troof True)
+                   , ("v3", Troof True)
+                   , ("v4", Troof False)
+                   , ("v5", Troof True)]
+
+testOpWon :: Assertion
+testOpWon = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R WON OF WIN WIN
+        v2 R WON OF WIN FAIL
+        v3 R WON OF FAIL WIN
+        v4 R WON OF FAIL FAIL
+        v5 R WON OF 5 2.0
+        |]
+        expected = [ ("v1", Troof False)
+                   , ("v2", Troof True)
+                   , ("v3", Troof True)
+                   , ("v4", Troof False)
+                   , ("v5", Troof False)]
+
+testOpSaem :: Assertion
+testOpSaem = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R BOTH SAEM 1 1
+        v2 R BOTH SAEM 1.0 1.0
+        v3 R BOTH SAEM 1 1.0
+        v4 R BOTH SAEM 1 "1"
+        v5 R BOTH SAEM "1" "1"
+        |]
+        expected = [ ("v1", Troof True)
+                   , ("v2", Troof True)
+                   , ("v3", Troof True)
+                   , ("v4", Troof False)
+                   , ("v5", Troof True)]
+
+testOpDiffrint :: Assertion
+testOpDiffrint = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R DIFFRINT 1 1
+        v2 R DIFFRINT 1.0 1.0
+        v3 R DIFFRINT 1 1.0
+        v4 R DIFFRINT 1 "1"
+        v5 R DIFFRINT "1" "1"
+        |]
+        expected = [ ("v1", Troof False)
+                   , ("v2", Troof False)
+                   , ("v3", Troof False)
+                   , ("v4", Troof True)
+                   , ("v5", Troof False)]
+
+testOpAll :: Assertion
+testOpAll = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R ALL OF 1 1 MKAY
+        v2 R ALL OF 1.0 1.0 MKAY
+        v3 R ALL OF 1 1.0 MKAY
+        v4 R ALL OF 1 "" MKAY
+        v5 R ALL OF "1" "1" MKAY
+        |]
+        expected = [ ("v1", Troof True)
+                   , ("v2", Troof True)
+                   , ("v3", Troof True)
+                   , ("v4", Troof False)
+                   , ("v5", Troof True)]
+
+testOpAny :: Assertion
+testOpAny = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R ANY OF FAIL 0 MKAY
+        v2 R ANY OF 1.0 1.0 MKAY
+        v3 R ANY OF 1 1.0 MKAY
+        v4 R ANY OF 1 "" MKAY
+        v5 R ANY OF 0.0 "" MKAY
+        |]
+        expected = [ ("v1", Troof False)
+                   , ("v2", Troof True)
+                   , ("v3", Troof True)
+                   , ("v4", Troof True)
+                   , ("v5", Troof False)]
+
+testOpNot :: Assertion
+testOpNot = checkStoreLocal code expected
+    where
+        code = [r|
+        v1 R NOT FAIL
+        v2 R NOT WIN
+        v3 R NOT "1"
+        v4 R NOT 0
+        v5 R NOT 1.0
+        |]
+        expected = [ ("v1", Troof True)
+                   , ("v2", Troof False)
+                   , ("v3", Troof False)
+                   , ("v4", Troof True)
+                   , ("v5", Troof False)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -227,4 +461,19 @@ tests = testGroup "Interpreter"
     , testCase "testIf4" testIf4
     , testCase "testReturnInSubProgram" testReturnInSubProgram
     , testCase "testReturnInSubProgram2" testReturnInSubProgram2
+    , testCase "testOpSum" testOpSum
+    , testCase "testOpDiff" testOpDiff
+    , testCase "testOpProd" testOpProd
+    , testCase "testOpQuoshunt" testOpQuoshunt
+    , testCase "testOpMod" testOpMod
+    , testCase "testOpBiggr" testOpBiggr
+    , testCase "testOpSmallr" testOpSmallr
+    , testCase "testOpBoth" testOpBoth
+    , testCase "testOpEither" testOpEither
+    , testCase "testOpWon" testOpWon
+    , testCase "testOpSaem" testOpSaem
+    , testCase "testOpDiffrint" testOpDiffrint
+    , testCase "testOpAll" testOpAll
+    , testCase "testOpAny" testOpAny
+    , testCase "testOpNot" testOpNot
     ]
