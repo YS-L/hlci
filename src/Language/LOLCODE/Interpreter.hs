@@ -97,7 +97,11 @@ eval (Call name exprs) = do
                       }
             exec prog
             ret <- lookupEnv locals "IT"
-            put $ env { return_token = 0 }
+            env' <- get
+            put $ env' { locals = locals env
+                       , return_id = return_id env
+                       , return_token = 0
+                       }
             return ret
         _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
 
@@ -319,7 +323,10 @@ exec (Case pairs defc) = do
                       , breakable = True }
             exec s
             env' <- get
-            put env { locals = (locals env') ++ (locals env) }
+            put env' { locals = (locals env') ++ (locals env)
+                     , break_id = break_id env
+                     , break_token = 0
+                     , breakable = breakable env }
         Nothing -> case defc of
             Just p -> do
                 env <- get
@@ -328,7 +335,10 @@ exec (Case pairs defc) = do
                           , breakable = True }
                 exec p
                 env' <- get
-                put env { locals = (locals env') ++ (locals env) }
+                put env' { locals = (locals env') ++ (locals env)
+                         , break_id = break_id env
+                         , break_token = 0
+                         , breakable = breakable env }
             Nothing -> return ()
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p

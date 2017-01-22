@@ -510,6 +510,95 @@ testSwitch2 = checkStoreLocal code expected
         |]
         expected = [("var", Yarn "FISH IS TRANSPARENT")]
 
+testSwitch3 :: Assertion
+testSwitch3 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I check_fish
+
+            color R "G"
+            I HAS A var
+
+            color, WTF?
+              OMG "R"
+                var R "RED FISH"
+                GTFO
+              OMG "Y"
+                var R "YELLOW FISH"
+              OMG "G"
+              OMG "B"
+                var R "FISH HAS A FLAVOR"
+                GTFO
+              OMGWTF
+                var R "FISH IS TRANSPARENT"
+            OIC
+
+            FOUND YR var
+
+        IF U SAY SO
+
+        out R (I IZ check_fish MKAY)
+        |]
+        expected = [("out", Yarn "FISH HAS A FLAVOR")]
+
+testSwitch4 :: Assertion
+testSwitch4 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            color R "R"
+
+            color, WTF?
+              OMG "R"
+                FOUND YR "CORRECT"
+              OMG "Y"
+                FOUND YR "WRONG_Y"
+              OMG "G"
+              OMG "B"
+                FOUND YR "WRONG_GB"
+              OMGWTF
+                FOUND YR "WRONG_WTF"
+            OIC
+
+            FOUND YR "WRONG_WTF2"
+
+        IF U SAY SO
+
+        out R (I IZ foo MKAY)
+        |]
+        expected = [("out", Yarn "CORRECT")]
+
+testSwitch5 :: Assertion
+testSwitch5 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            color R "R"
+
+            color, WTF?
+              OMG "R"
+                "WRONG_0"
+                GTFO
+                FOUND YR "WRONG_R"
+              OMG "Y"
+                FOUND YR "WRONG_Y"
+              OMG "G"
+              OMG "B"
+                FOUND YR "WRONG_GB"
+              OMGWTF
+                FOUND YR "WRONG_WTF"
+            OIC
+
+            FOUND YR "CORRECT"
+
+        IF U SAY SO
+
+        out R (I IZ foo MKAY)
+        |]
+        expected = [("out", Yarn "CORRECT")]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -541,4 +630,7 @@ tests = testGroup "Interpreter"
     , testCase "testBreakFromFunction" testBreakFromFunction
     , testCase "testSwitch1" testSwitch1
     , testCase "testSwitch2" testSwitch2
+    , testCase "testSwitch3" testSwitch3
+    , testCase "testSwitch4" testSwitch4
+    , testCase "testSwitch5" testSwitch5
     ]
