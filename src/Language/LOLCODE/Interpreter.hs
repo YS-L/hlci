@@ -19,6 +19,8 @@ data Env = Env { globals      :: Store
 
 type Interp a = StateT Env IO a
 
+maxCallDepth = 10000
+
 lookupEnv :: (Env -> Store) -> String -> Interp Expr
 lookupEnv f name = do
     env <- get
@@ -97,7 +99,10 @@ eval (Call name exprs) = do
                       , return_token = 0
                       , breakable = False
                       }
-            exec prog
+            if return_id env > maxCallDepth then
+                fail $ "Maximum call depth reached: " ++ (show maxCallDepth)
+            else
+                exec prog
             ret <- lookupEnv locals "IT"
             env' <- get
             put $ env' { locals = locals env
