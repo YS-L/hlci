@@ -676,6 +676,25 @@ testNestedFunctionWithCase2 = checkStoreLocal code expected
         |]
         expected = [("out", Numbr 2)]
 
+testNestedFunctionWithCase3 :: Assertion
+testNestedFunctionWithCase3 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+            "WRONG"
+            GTFO
+            FOUND YR food
+        IF U SAY SO
+
+        "A", WTF?
+        OMG "A"
+            out R (I IZ foo MKAY)
+            GTFO
+            out R "WRONG2"
+        OIC
+        |]
+        expected = [("out", Noob)]
+
 testRecursiveFunction :: Assertion
 testRecursiveFunction = checkStoreLocal code expected
     where
@@ -748,5 +767,6 @@ tests = testGroup "Interpreter"
     , testCase "testNestedFunction" testNestedFunction
     , testCase "testNestedFunctionWithCase1" testNestedFunctionWithCase1
     , testCase "testNestedFunctionWithCase2" testNestedFunctionWithCase2
+    , testCase "testNestedFunctionWithCase3" testNestedFunctionWithCase3
     , testCase "testRecursiveFunction" testRecursiveFunction
     ]

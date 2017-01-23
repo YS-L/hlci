@@ -95,17 +95,15 @@ eval (Call name exprs) = do
             put $ env { locals = locals'
                       , return_id = return_id env + 1
                       , return_token = 0
-                      --, return_token = return_id env
+                      , breakable = False
                       }
-            --liftIO $ putStrLn $ "calling into ----> " ++ show (return_id env + 1)
             exec prog
             ret <- lookupEnv locals "IT"
             env' <- get
-            --liftIO $ putStrLn $ "env after ----> " ++ show env'
             put $ env' { locals = locals env
                        , return_id = return_id env
                        , return_token = 0
-                       --, return_token = return_token env
+                       , breakable = breakable env
                        }
             return ret
         _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
