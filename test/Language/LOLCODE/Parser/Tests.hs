@@ -384,6 +384,30 @@ testSwitch2 = checkStmt code expected
         |]
         expected = Case [(Yarn "R", ExprStmt (Numbr 1)), (Yarn "B", Seq [])] (Just (ExprStmt (Numbr 3)))
 
+testParens :: Assertion
+testParens = checkStmt code expected
+    where
+        code = [r|
+        ((VISIBLE "SHIBA" "INU"))
+        (123)
+        456
+        |]
+        expected = Seq [s1, s2, s3]
+        s1 = Print [(Yarn "SHIBA"), (Yarn "INU")] True
+        s2 = ExprStmt (Numbr 123)
+        s3 = ExprStmt (Numbr 456)
+
+testVisible :: Assertion
+testVisible = checkStmt code expected
+    where
+        code = [r|
+        (VISIBLE "SHIBA" "INU")
+        123
+        |]
+        expected = Seq [s1, s2]
+        s1 = Print [(Yarn "SHIBA"), (Yarn "INU")] True
+        s2 = ExprStmt (Numbr 123)
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -432,4 +456,6 @@ tests = testGroup "Parser"
     , testCase "testLoop6" testLoop6
     , testCase "testSwitch1" testSwitch1
     , testCase "testSwitch2" testSwitch2
+    , testCase "testParens" testParens
+    , testCase "testVisible" testVisible
     ]

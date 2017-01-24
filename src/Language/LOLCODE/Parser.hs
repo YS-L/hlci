@@ -153,8 +153,7 @@ notOp = do
     return $ Not ex
 
 statement :: Parser Stmt
-statement =  parens statement
-         <|> sequenceOfStmt
+statement =  sequenceOfStmt
 
 sequenceOfStmt :: Parser Stmt
 sequenceOfStmt = do
@@ -165,7 +164,8 @@ sequenceOfStmt = do
     return $ if length list == 1 then head list else Seq list
 
 statement' :: Parser Stmt
-statement' =  try assignStmt
+statement' =  parens statement'
+          <|> try assignStmt
           <|> try declareStmt
           <|> try castStmt1
           <|> try castStmt2
