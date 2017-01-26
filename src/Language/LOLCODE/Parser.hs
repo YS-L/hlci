@@ -51,19 +51,11 @@ yarn = do
     return $ Yarn s
 
 vtype :: Parser Type
-vtype = do
-    tp <- (try $ symbol "TROOF")
-      <|> (try $ symbol "NUMBR")
-      <|> (try $ symbol "NUMBAR")
-      <|> (try $ symbol "YARN")
-      <|> (try $ symbol "NOOB")
-    case tp of
-        "TROOF" -> return TroofT
-        "NUMBR" -> return NumbrT
-        "NUMBAR" -> return NumbarT
-        "YARN" -> return YarnT
-        "NOOB" -> return NoobT
-        _ -> unexpected "Invalid type"
+vtype =  (try $ symbol "TROOF" >> return TroofT)
+     <|> (try $ symbol "NUMBR" >> return NumbrT)
+     <|> (try $ symbol "NUMBAR" >> return NumbarT)
+     <|> (try $ symbol "YARN" >> return YarnT)
+     <|> (try $ symbol "NOOB" >> return NoobT)
 
 cast :: Parser Expr
 cast = do
@@ -104,47 +96,31 @@ smoosh = do
 
 binaryOp :: Parser Expr
 binaryOp = do
-    op <- (try $ symbol "SUM OF")
-      <|> (try $ symbol "DIFF OF")
-      <|> (try $ symbol "PRODUKT OF")
-      <|> (try $ symbol "QUOSHUNT OF")
-      <|> (try $ symbol "MOD OF")
-      <|> (try $ symbol "BIGGR OF")
-      <|> (try $ symbol "SMALLR OF")
-      <|> (try $ symbol "BOTH OF")
-      <|> (try $ symbol "EITHER OF")
-      <|> (try $ symbol "WON OF")
-      <|> (try $ symbol "BOTH SAEM")
-      <|> (try $ symbol "DIFFRINT")
-    let op' = case op of
-            "SUM OF" -> Sum
-            "DIFF OF" -> Diff
-            "PRODUKT OF" -> Produkt
-            "QUOSHUNT OF" -> Quoshunt
-            "MOD OF" -> Mod
-            "BIGGR OF" -> Biggr
-            "SMALLR OF" -> Smallr
-            "BOTH OF" -> Both
-            "EITHER OF" -> Either
-            "WON OF" -> Won
-            "BOTH SAEM" -> Saem
-            "DIFFRINT" -> Diffrint
+    op <- (try $ symbol "SUM OF"  >> return Sum)
+      <|> (try $ symbol "DIFF OF" >> return Diff)
+      <|> (try $ symbol "PRODUKT OF" >> return Produkt)
+      <|> (try $ symbol "QUOSHUNT OF" >> return Quoshunt)
+      <|> (try $ symbol "MOD OF" >> return Mod)
+      <|> (try $ symbol "BIGGR OF" >> return Biggr)
+      <|> (try $ symbol "SMALLR OF" >> return Smallr)
+      <|> (try $ symbol "BOTH OF" >> return Both)
+      <|> (try $ symbol "EITHER OF" >> return Either)
+      <|> (try $ symbol "WON OF" >> return Won)
+      <|> (try $ symbol "BOTH SAEM" >> return Saem)
+      <|> (try $ symbol "DIFFRINT" >> return Diffrint)
     a <- expr
     optional $ reserved "AN"
     b <- expr
-    return $ BinOp op' a b
+    return $ BinOp op a b
 
 naryOp :: Parser Expr
 naryOp = do
-    op <- (try $ symbol "ALL")
-      <|> (try $ symbol "ANY")
-    let op' = case op of
-            "ALL" -> All
-            "ANY" -> Any
+    op <- (try $ symbol "ALL" >> return All)
+      <|> (try $ symbol "ANY" >> return Any)
     reserved "OF"
     exprs <- sepBy expr (optional $ reserved "AN")
     reserved "MKAY"
-    return $ NaryOp op' exprs
+    return $ NaryOp op exprs
 
 notOp :: Parser Expr
 notOp = do
