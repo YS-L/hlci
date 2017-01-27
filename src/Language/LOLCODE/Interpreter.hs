@@ -200,6 +200,8 @@ eval (NaryOp All exprs) = evalBoolOpFold and exprs
 
 eval (NaryOp Any exprs) = evalBoolOpFold or exprs
 
+eval (DebugFail s) = fail $ "Debug fail: " ++ s
+
 eval p@_ = fail $ "Expression not implemented: " ++ show p
 
 evalNumeric :: Expr -> Interp Expr

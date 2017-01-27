@@ -24,6 +24,7 @@ factor = try numbar
       <|> try numbr
       <|> try troof
       <|> try yarn
+      <|> try debugFail
       <|> try function
       <|> try call
       <|> try variable
@@ -137,6 +138,12 @@ notOp = do
     reserved "NOT"
     ex <- expr
     return $ Not ex
+
+debugFail :: Parser Expr
+debugFail = do
+    reserved "__DEBUGFAIL__"
+    s <- stringLiteral
+    return $ DebugFail s
 
 statement :: Parser Stmt
 statement =  sequenceOfStmt

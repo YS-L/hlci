@@ -14,6 +14,7 @@ data Expr
     | Function String [String] Stmt
     | Call String [Expr]
     | Smoosh [Expr]
+    | DebugFail String
     deriving (Eq, Ord, Show)
 
 data Op

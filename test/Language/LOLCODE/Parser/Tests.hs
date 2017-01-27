@@ -195,6 +195,14 @@ testNot = checkExpr code expected
         |]
         expected = [Not (Var "x")]
 
+testDebugFail :: Assertion
+testDebugFail = checkExpr code expected
+    where
+        code = [r|
+        __DEBUGFAIL__ "Should not be here"
+        |]
+        expected = [DebugFail "Should not be here"]
+
 testAssign :: Assertion
 testAssign = checkStmt "a R 1" (Assign "a" (Numbr 1))
 
@@ -441,6 +449,7 @@ tests = testGroup "Parser"
     , testCase "testBinOp3" testBinOp3
     , testCase "testComposedOp" testComposedOp
     , testCase "testNot" testNot
+    , testCase "testDebugFail" testDebugFail
     , testCase "testNaryOp" testNaryOp
     , testCase "testAssign" testAssign
     , testCase "testDeclare1" testDeclare1
