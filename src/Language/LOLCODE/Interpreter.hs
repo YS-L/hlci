@@ -234,12 +234,8 @@ evalBoolOp f x y = do
 
 evalBoolOpFold :: ([Bool] -> Bool) -> [Expr] -> Interp Expr
 evalBoolOpFold f exprs = do
-    bools <- mapM (\x -> liftM unTroof $ eval (Cast x TroofT)) exprs
+    bools <- mapM evalAndCastBool exprs
     return $ Troof $ f bools
-        where
-            unTroof x = case x of
-                Troof True -> True
-                _ -> False
 
 exec :: Stmt -> Interp ()
 
