@@ -866,6 +866,56 @@ testLoopWithinFunction2 = checkStoreLocal code expected
         |]
         expected = [("out", Numbr 55)]
 
+testLoopWithinSwitch :: Assertion
+testLoopWithinSwitch = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            sum R 0
+
+            "A", WTF?
+            OMG "A"
+                IM IN YR sumz
+                    sum R SUM OF sum 1
+                    BOTH SAEM sum 55, O RLY?
+                    YA RLY
+                        GTFO
+                    OIC
+                IM OUTTA YR sumz
+                sum R SUM OF sum 10
+            OIC
+
+            FOUND YR sum
+
+        IF U SAY SO
+
+        out R I IZ foo MKAY
+        |]
+        expected = [("out", Numbr 65)]
+
+testLoopNested :: Assertion
+testLoopNested = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            sum R 0
+
+            IM IN YR sumz UPPIN YR n1 TIL BOTH SAEM n1 10
+                IM IN YR sumz2 UPPIN YR n2 TIL BOTH SAEM n2 10
+                    sum R SUM OF sum 1
+                IM OUTTA YR sumz2
+            IM OUTTA YR sumz
+
+            FOUND YR sum
+
+        IF U SAY SO
+
+        out R I IZ foo MKAY
+        |]
+        expected = [("out", Numbr 100)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -913,4 +963,6 @@ tests = testGroup "Interpreter"
     , testCase "testLoop5" testLoop5
     , testCase "testLoopWithinFunction" testLoopWithinFunction
     , testCase "testLoopWithinFunction2" testLoopWithinFunction2
+    , testCase "testLoopWithinSwitch" testLoopWithinSwitch
+    , testCase "testLoopNested" testLoopNested
     ]
