@@ -263,6 +263,15 @@ evalAndCastBool ex = do
             Troof True -> True
             _ -> False
 
+selectOptions :: [(Expr, Stmt)] -> Interp (Maybe Stmt)
+selectOptions (x:xs) = do
+    b <- evalAndCastBool $ fst x
+    if b then
+        return $ Just (snd x)
+    else
+        selectOptions xs
+selectOptions [] = return Nothing
+
 exec (Seq []) = return ()
 
 exec (Seq (s:ss)) = do
@@ -324,51 +333,37 @@ exec (If yes pairs no) = do
         Nothing -> case no of
             Just p -> exec p
             Nothing -> return ()
-    where
-        selectOptions :: [(Expr, Stmt)] -> Interp (Maybe Stmt)
-        selectOptions (x:xs) = do
-            b <- evalAndCastBool $ fst x
-            if b then
-                return $ Just (snd x)
-            else
-                selectOptions xs
-        selectOptions [] = return Nothing
 
 exec (Case pairs defc) = do
+    ref <- lookupEnv locals "IT"
     let exprs = map fst pairs
         progs = map snd pairs
         parts = map (\i -> Seq $ drop i progs) [0..(length progs - 1)]
-    ref <- lookupEnv locals "IT"
-    conds <- mapM (\x -> eval (BinOp Saem x ref)) exprs
-    let pair = find (unTroof . fst) $ zip conds parts
-            where
-                unTroof x = case x of
-                    Troof True -> True
-                    _ -> False
+    pair <- selectOptions $ zip (map (\x -> BinOp Saem x ref) exprs) parts
     case pair of
-        Just (_, s) -> runCase s
+        Just s -> runCase s
         Nothing -> case defc of
             Just p -> runCase p
             Nothing -> return ()
-        where
-            runCase :: Stmt -> Interp ()
-            runCase s = do
-                env <- get
-                enterCase env
-                exec s
-                exitCase env
-            enterCase :: Env -> Interp ()
-            enterCase env = do
-                put $ env { break_id = (break_id env) + 1
-                          , break_token = 0
-                          , breakable = True }
-            exitCase :: Env -> Interp ()
-            exitCase env = do
-                env' <- get
-                put env' { locals = (locals env') ++ (locals env)
-                         , break_id = break_id env
-                         , break_token = 0
-                         , breakable = breakable env }
+    where
+        runCase :: Stmt -> Interp ()
+        runCase s = do
+            env <- get
+            enterCase env
+            exec s
+            exitCase env
+        enterCase :: Env -> Interp ()
+        enterCase env = do
+            put $ env { break_id = (break_id env) + 1
+                      , break_token = 0
+                      , breakable = True }
+        exitCase :: Env -> Interp ()
+        exitCase env = do
+            env' <- get
+            put env' { locals = (locals env') ++ (locals env)
+                     , break_id = break_id env
+                     , break_token = 0
+                     , breakable = breakable env }
 
 exec (Loop _ lop lcond s) = do
     case lop of
