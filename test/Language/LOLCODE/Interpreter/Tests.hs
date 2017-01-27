@@ -162,6 +162,24 @@ testIf4 = checkStoreLocal code expected
         |]
         expected = [("VAR", Numbr 100), ("VAR2", Numbr 101)]
 
+testIf5 :: Assertion
+testIf5 = checkStoreLocal code expected
+    where
+        code = [r|
+        FAIL
+        O RLY?
+          YA RLY
+            VAR R 1
+          MEBBE WIN
+            VAR R 2
+          MEBBE __DEBUGFAIL__ "If is not lazy"
+            VAR R 3
+          NO WAI
+            VAR R 0
+        OIC
+        |]
+        expected = [("VAR", Numbr 2)]
+
 testReturnInSubProgram :: Assertion
 testReturnInSubProgram = checkStoreLocal code expected
     where
@@ -927,6 +945,7 @@ tests = testGroup "Interpreter"
     , testCase "testIf2" testIf2
     , testCase "testIf3" testIf3
     , testCase "testIf4" testIf4
+    , testCase "testIf5" testIf5
     , testCase "testReturnInSubProgram" testReturnInSubProgram
     , testCase "testReturnInSubProgram2" testReturnInSubProgram2
     , testCase "testOpSum" testOpSum

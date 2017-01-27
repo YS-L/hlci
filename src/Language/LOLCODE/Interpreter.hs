@@ -318,17 +318,21 @@ exec (If yes pairs no) = do
     ex <- lookupEnv locals "IT"
     let exprs = ex : map fst pairs
         stmts = yes : map snd pairs
-    conds <- mapM (\p -> eval p >>= (\x -> eval (Cast x TroofT))) exprs
-    let pair = find (unTroof . fst) $ zip conds stmts
-            where
-                unTroof x = case x of
-                    Troof True -> True
-                    _ -> False
+    pair <- selectOptions $ zip exprs stmts
     case pair of
-        Just (_, s) -> exec s
+        Just s -> exec s
         Nothing -> case no of
             Just p -> exec p
             Nothing -> return ()
+    where
+        selectOptions :: [(Expr, Stmt)] -> Interp (Maybe Stmt)
+        selectOptions (x:xs) = do
+            b <- evalAndCastBool $ fst x
+            if b then
+                return $ Just (snd x)
+            else
+                selectOptions xs
+        selectOptions [] = return Nothing
 
 exec (Case pairs defc) = do
     let exprs = map fst pairs
