@@ -754,6 +754,118 @@ testRecursiveFunction = checkStoreLocal code expected
                    , ("n10", Numbr 55)
                    ]
 
+testLoop1 :: Assertion
+testLoop1 = checkStoreLocal code expected
+    where
+        code = [r|
+        sum R 0
+        IM IN YR sumz UPPIN YR n TIL BOTH SAEM n 10
+            sum R SUM OF sum n
+        IM OUTTA YR sumz
+        |]
+        expected = [("sum", Numbr 45)]
+
+testLoop2 :: Assertion
+testLoop2 = checkStoreLocal code expected
+    where
+        code = [r|
+        sum R 0
+        IM IN YR sumz NERFIN YR n TIL BOTH SAEM n -10
+            sum R SUM OF sum n
+        IM OUTTA YR sumz
+        |]
+        expected = [("sum", Numbr (-45))]
+
+testLoop3 :: Assertion
+testLoop3 = checkStoreLocal code expected
+    where
+        code = [r|
+        sum R 0
+        IM IN YR sumz UPPIN YR n TIL BOTH SAEM n 10
+            sum R SUM OF sum n
+            GTFO
+        IM OUTTA YR sumz
+        |]
+        expected = [("sum", Numbr 0)]
+
+testLoop4 :: Assertion
+testLoop4 = checkStoreLocal code expected
+    where
+        code = [r|
+        sum R 0
+        IM IN YR sumz
+            sum R SUM OF sum 1
+            BOTH SAEM sum 55, O RLY?
+            YA RLY
+                GTFO
+            OIC
+        IM OUTTA YR sumz
+        |]
+        expected = [("sum", Numbr 55)]
+
+testLoop5 :: Assertion
+testLoop5 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I myUppin YR val
+            FOUND YR SUM OF val 1
+        IF U SAY SO
+
+        sum R 0
+        IM IN YR sumz myUppin YR n TIL BOTH SAEM n 10
+            sum R SUM OF sum n
+        IM OUTTA YR sumz
+        |]
+        expected = [("sum", Numbr 45)]
+
+testLoopWithinFunction :: Assertion
+testLoopWithinFunction = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            sum R 0
+
+            IM IN YR sumz
+                sum R SUM OF sum 1
+                BOTH SAEM sum 55, O RLY?
+                YA RLY
+                    GTFO
+                OIC
+            IM OUTTA YR sumz
+
+            FOUND YR sum
+
+        IF U SAY SO
+
+        out R I IZ foo MKAY
+        |]
+        expected = [("out", Numbr 55)]
+
+testLoopWithinFunction2 :: Assertion
+testLoopWithinFunction2 = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            sum R 0
+
+            IM IN YR sumz
+                sum R SUM OF sum 1
+                BOTH SAEM sum 55, O RLY?
+                YA RLY
+                    FOUND YR sum
+                OIC
+            IM OUTTA YR sumz
+
+            FOUND YR "WRONG"
+
+        IF U SAY SO
+
+        out R I IZ foo MKAY
+        |]
+        expected = [("out", Numbr 55)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -794,4 +906,11 @@ tests = testGroup "Interpreter"
     , testCase "testNestedFunctionWithCase3" testNestedFunctionWithCase3
     , testCase "testNestedFunctionWithCase4" testNestedFunctionWithCase4
     , testCase "testRecursiveFunction" testRecursiveFunction
+    , testCase "testLoop1" testLoop1
+    , testCase "testLoop2" testLoop2
+    , testCase "testLoop3" testLoop3
+    , testCase "testLoop4" testLoop4
+    , testCase "testLoop5" testLoop5
+    , testCase "testLoopWithinFunction" testLoopWithinFunction
+    , testCase "testLoopWithinFunction2" testLoopWithinFunction2
     ]

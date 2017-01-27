@@ -246,6 +246,21 @@ pushLocal name ex = do
     env <- get
     put $ env { locals = (name, ex):(locals env) }
 
+popLocal :: String -> Interp ()
+popLocal name = do
+    env <- get
+    put $ env { locals = filter (\x -> (fst x) /= name) (locals env) }
+
+evalAndCastBool :: Expr -> Interp (Bool)
+evalAndCastBool ex = do
+    ex' <- eval ex
+    troof <- eval (Cast ex' TroofT)
+    return $ unTroof troof
+    where
+        unTroof x = case x of
+            Troof True -> True
+            _ -> False
+
 exec (Seq []) = return ()
 
 exec (Seq (s:ss)) = do
@@ -348,6 +363,68 @@ exec (Case pairs defc) = do
                          , break_id = break_id env
                          , break_token = 0
                          , breakable = breakable env }
+
+exec (Loop _ lop lcond s) = do
+    case lop of
+        Increment name -> pushLocal name (Numbr 0)
+        Decrement name -> pushLocal name (Numbr 0)
+        UFunc _ name -> pushLocal name (Numbr 0)
+        _ -> return ()
+    env <- get
+    put $ env { break_id = (break_id env) + 1
+              , break_token = 0
+              , breakable = True }
+    runLoop env
+    where
+        runLoop :: Env -> Interp ()
+        runLoop initEnv = do
+            continue <- toContinue
+            if continue then do
+                exec s
+                env <- get
+                if ((return_token env) /= (return_id env) &&
+                    (break_token env) /= (break_id env)) then do
+                    stepLoop
+                    runLoop initEnv
+                else
+                    exitLoop initEnv
+            else
+                exitLoop initEnv
+
+        exitLoop :: Env -> Interp ()
+        exitLoop env = do
+            case lop of
+                Increment name -> popLocal name
+                Decrement name -> popLocal name
+                UFunc _ name -> popLocal name
+                _ -> return ()
+            env' <- get
+            put env' { locals = (locals env') ++ (locals env)
+                     , break_id = break_id env
+                     , break_token = 0
+                     , breakable = breakable env }
+
+        toContinue :: Interp Bool
+        toContinue = case lcond of
+            Until ex -> fmap not (evalAndCastBool ex)
+            While ex -> evalAndCastBool ex
+            Forever -> return True
+
+        stepLoop :: Interp ()
+        stepLoop = case lop of
+            Increment name -> do
+                current <- lookupEnv locals name
+                val <- eval $ BinOp Sum current (Numbr 1)
+                exec $ Assign name val
+            Decrement name -> do
+                current <- lookupEnv locals name
+                val <- eval $ BinOp Diff current (Numbr 1)
+                exec $ Assign name val
+            UFunc func name -> do
+                current <- lookupEnv locals name
+                val <- eval $ Call func [current]
+                exec $ Assign name val
+            _ -> return ()
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 
