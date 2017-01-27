@@ -325,30 +325,29 @@ exec (Case pairs defc) = do
                     Troof True -> True
                     _ -> False
     case pair of
-        Just (_, s) -> do
-            env <- get
-            put $ env { break_id = (break_id env) + 1
-                      , break_token = 0
-                      , breakable = True }
-            exec s
-            env' <- get
-            put env' { locals = (locals env') ++ (locals env)
-                     , break_id = break_id env
-                     , break_token = 0
-                     , breakable = breakable env }
+        Just (_, s) -> runCase s
         Nothing -> case defc of
-            Just p -> do
+            Just p -> runCase p
+            Nothing -> return ()
+        where
+            runCase :: Stmt -> Interp ()
+            runCase s = do
                 env <- get
+                enterCase env
+                exec s
+                exitCase env
+            enterCase :: Env -> Interp ()
+            enterCase env = do
                 put $ env { break_id = (break_id env) + 1
                           , break_token = 0
                           , breakable = True }
-                exec p
+            exitCase :: Env -> Interp ()
+            exitCase env = do
                 env' <- get
                 put env' { locals = (locals env') ++ (locals env)
                          , break_id = break_id env
                          , break_token = 0
                          , breakable = breakable env }
-            Nothing -> return ()
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 
