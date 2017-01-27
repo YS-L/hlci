@@ -24,6 +24,7 @@ library
                      , parsec
                      , mtl
                      , containers
+                     , MissingH
   default-language:    Haskell2010
 
 executable hlci-exe

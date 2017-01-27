@@ -10,6 +10,15 @@ import qualified Text.Parsec.Token       as Tok
 import           Language.LOLCODE.Lexer
 import           Language.LOLCODE.Syntax
 
+import           Data.List.Utils         (replace)
+
+-- Input will be canonicalized by appending this symbol to end of each line
+lineEndSymbol = ","
+
+-- Should be used explicitly when parsing multi-line expressions or statements
+lineEnd :: Parser ()
+lineEnd = optional . many . reserved $ lineEndSymbol
+
 factor :: Parser Expr
 factor = try numbar
       <|> try numbr
@@ -72,11 +81,12 @@ variable = do
 
 function :: Parser Expr
 function = do
-    reserved "HOW IZ I"
+    reserved "HOW IZ I" >> lineEnd
     name <- identifier
     args <- sepBy (reserved "YR" >> identifier) (reserved "AN")
+    lineEnd
     body <- statement
-    reserved "IF U SAY SO"
+    reserved "IF U SAY SO" >> lineEnd
     return $ Function name args body
 
 call :: Parser Expr
@@ -135,7 +145,7 @@ sequenceOfStmt :: Parser Stmt
 sequenceOfStmt = do
     list <- many $ do
         st <- statement'
-        optional $ symbol ","
+        lineEnd
         return $ st
     return $ if length list == 1 then head list else Seq list
 
@@ -186,16 +196,17 @@ castStmt2 = do
 
 ifStmt :: Parser Stmt
 ifStmt = do
-    reserved "O RLY?"
-    reserved "YA RLY"
+    reserved "O RLY?" >> lineEnd
+    reserved "YA RLY" >> lineEnd
     yes <- statement
     maybes <- many $ do
         reserved "MEBBE"
-        ex <- expr
+        ex <- expr;
+        lineEnd
         st <- statement
         return $ (ex, st)
-    no <- optionMaybe $ reserved "NO WAI" >> statement
-    reserved "OIC"
+    no <- optionMaybe $ reserved "NO WAI" >> lineEnd >> statement
+    reserved "OIC" >> lineEnd
     return $ If yes maybes no
 
 exprStmt :: Parser Stmt
@@ -225,9 +236,11 @@ loopStmt = do
     label <- identifier
     op <- loopOp
     cond <- loopCond
+    lineEnd
     prog <- statement
     reserved "IM OUTTA YR"
     label' <- identifier
+    lineEnd
     -- Check that labels match?
     return $ Loop label op cond prog
 
@@ -244,14 +257,15 @@ loopCond =  ((try $ reserved "TIL") >> expr >>= return . Until)
 
 caseStmt :: Parser Stmt
 caseStmt = do
-    reserved "WTF?"
+    reserved "WTF?" >> lineEnd
     conds <- many $ (do
         reserved "OMG"
         cond <- valueLiteral
+        lineEnd
         prog <- statement
         return (cond, prog))
-    p <- optionMaybe (reserved "OMGWTF" >> statement)
-    reserved "OIC"
+    p <- optionMaybe (reserved "OMGWTF" >> lineEnd >> statement)
+    reserved "OIC" >> lineEnd
     return $ Case conds p
 
 valueLiteral :: Parser Expr
@@ -267,6 +281,7 @@ defn =  try function
 contents :: Parser a -> Parser a
 contents p = do
   Tok.whiteSpace lexer
+  lineEnd  -- in case a canonicalized new line appears before the very first statement
   r <- p
   eof
   return r
@@ -276,6 +291,9 @@ toplevel = many $ do
     def <- defn
     return def
 
+canonicalize :: String -> String
+canonicalize = replace "\n" (lineEndSymbol ++ "\n")
+
 parseExpr :: String -> Either ParseError Expr
 parseExpr s = parse (contents expr) "<stdin>" s
 
@@ -283,4 +301,4 @@ parseToplevel :: String -> Either ParseError [Expr]
 parseToplevel s = parse (contents toplevel) "<stdin>" s
 
 parseToplevelStmt :: String -> Either ParseError Stmt
-parseToplevelStmt s = parse (contents statement) "<stdin>" s
+parseToplevelStmt s = parse (contents statement) "<stdin>" (canonicalize s)

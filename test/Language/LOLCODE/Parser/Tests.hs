@@ -107,6 +107,15 @@ testSmoosh3 = checkExpr code expected
         |]
         expected = [Smoosh [Yarn "CAT", Yarn "SHIBA"]]
 
+testSmoosh4 :: Assertion
+testSmoosh4 = checkStmt code expected
+    where
+        code = [r|
+        SMOOSH "CAT" "SHIBA"
+        123
+        |]
+        expected = Seq [ExprStmt $ Smoosh [Yarn "CAT", Yarn "SHIBA"], ExprStmt $ Numbr 123]
+
 testBinOp1 :: Assertion
 testBinOp1 = checkExpr code expected
     where
@@ -401,7 +410,7 @@ testVisible :: Assertion
 testVisible = checkStmt code expected
     where
         code = [r|
-        (VISIBLE "SHIBA" "INU")
+        VISIBLE "SHIBA" "INU"
         123
         |]
         expected = Seq [s1, s2]
@@ -426,6 +435,7 @@ tests = testGroup "Parser"
     , testCase "testSmoosh1" testSmoosh1
     , testCase "testSmoosh2" testSmoosh2
     , testCase "testSmoosh3" testSmoosh3
+    , testCase "testSmoosh4" testSmoosh4
     , testCase "testBinOp1" testBinOp1
     , testCase "testBinOp2" testBinOp2
     , testCase "testBinOp3" testBinOp3
