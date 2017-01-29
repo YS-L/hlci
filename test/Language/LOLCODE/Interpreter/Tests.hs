@@ -19,6 +19,14 @@ checkRun code expected = case parseToplevelStmt code of
         env <- run prog
         env @?= expected
 
+checkReturnId :: Env -> Assertion
+checkReturnId env = do
+    (return_id $ env) @?= 1
+
+checkBreakId :: Env -> Assertion
+checkBreakId env = do
+    (break_id $ env) @?= 1
+
 checkStore :: (Env -> Store) -> String -> [(String, Expr)] -> Assertion
 checkStore f code expected = case parseToplevelStmt code of
     Left err -> assertFailure $ show err
@@ -27,6 +35,8 @@ checkStore f code expected = case parseToplevelStmt code of
         forM_ expected (\p -> case lookup (fst p) (f env) of
             Just x -> x @?= (snd p)
             Nothing -> assertFailure $ "Expected key not found: " ++ (fst p))
+        checkReturnId env
+        checkBreakId env
 
 checkStoreLocal :: String -> [(String, Expr)] -> Assertion
 checkStoreLocal = checkStore locals
