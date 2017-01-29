@@ -281,10 +281,6 @@ valueLiteral = try numbar
             <|> try troof
             <|> try yarn
 
-defn :: Parser Expr
-defn =  try function
-    <|> expr
-
 contents :: Parser a -> Parser a
 contents p = do
     Tok.whiteSpace lexer
@@ -295,19 +291,11 @@ contents p = do
     eof
     return r
 
-toplevel :: Parser [Expr]
-toplevel = many $ do
-    def <- defn
-    return def
-
 canonicalize :: String -> String
 canonicalize = replace "\n" (lineEndSymbol ++ "\n")
 
-parseExpr :: String -> Either ParseError Expr
-parseExpr s = parse (contents expr) "<stdin>" s
-
 parseToplevel :: String -> Either ParseError [Expr]
-parseToplevel s = parse (contents toplevel) "<stdin>" s
+parseToplevel s = parse (contents $ many expr) "<stdin>" s
 
 parseToplevelStmtWithFilename :: String -> String -> Either ParseError Stmt
 parseToplevelStmtWithFilename filename s = parse (contents statement) filename (canonicalize s)
