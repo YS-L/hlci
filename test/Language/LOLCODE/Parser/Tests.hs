@@ -10,13 +10,16 @@ import           Test.Tasty              (TestTree, testGroup)
 import           Test.Tasty.HUnit        (testCase)
 import           Text.RawString.QQ
 
+preprocess :: String -> String
+preprocess code = "HAI 1.2\n" ++ code ++ "\nKTHXBYE"
+
 checkExpr :: String -> [Expr] -> Assertion
-checkExpr code expected = case parseToplevel code of
+checkExpr code expected = case parseToplevel (preprocess code) of
     Left err -> assertFailure $ show err
     Right ex -> ex @?= expected
 
 checkStmt :: String -> Stmt -> Assertion
-checkStmt code expected = case parseToplevelStmt code of
+checkStmt code expected = case parseToplevelStmt (preprocess code) of
     Left err -> assertFailure $ show err
     Right st -> st @?= expected
 

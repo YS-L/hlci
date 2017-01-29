@@ -12,8 +12,11 @@ import           Test.Tasty                   (TestTree, testGroup)
 import           Test.Tasty.HUnit             (testCase)
 import           Text.RawString.QQ
 
+preprocess :: String -> String
+preprocess code = "HAI 1.2\n" ++ code ++ "\nKTHXBYE"
+
 checkRun :: String -> Env -> Assertion
-checkRun code expected = case parseToplevelStmt code of
+checkRun code expected = case parseToplevelStmt (preprocess code) of
     Left err -> assertFailure $ show err
     Right prog -> do
         env <- run prog
@@ -28,7 +31,7 @@ checkBreakId env = do
     (break_id $ env) @?= 1
 
 checkStore :: (Env -> Store) -> String -> [(String, Expr)] -> Assertion
-checkStore f code expected = case parseToplevelStmt code of
+checkStore f code expected = case parseToplevelStmt (preprocess code) of
     Left err -> assertFailure $ show err
     Right prog -> do
         env <- run prog

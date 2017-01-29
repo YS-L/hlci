@@ -287,11 +287,13 @@ defn =  try function
 
 contents :: Parser a -> Parser a
 contents p = do
-  Tok.whiteSpace lexer
-  lineEnd  -- in case a canonicalized new line appears before the very first statement
-  r <- p
-  eof
-  return r
+    Tok.whiteSpace lexer
+    lineEnd  -- in case a canonicalized new line appears before the very first statement
+    reserved "HAI" >> float >> lineEnd
+    r <- p
+    reserved "KTHXBYE" >> lineEnd
+    eof
+    return r
 
 toplevel :: Parser [Expr]
 toplevel = many $ do

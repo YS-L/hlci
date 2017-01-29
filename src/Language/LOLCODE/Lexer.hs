@@ -27,6 +27,7 @@ lexer = Tok.makeTokenParser style
             , "SMOOSH", "MKAY"
             , "IM", "IN", "YR", "OUTTA", "UPPIN", "NERFIN", "GTFO"
             , "WTF", "OMG", "OMGWTF", "OIC"
+            , "HAI", "KTHXBYE"
             ]
     style = emptyDef {
                Tok.commentLine = "BTW"
