@@ -1,12 +1,12 @@
 module Main where
 
+import           Language.LOLCODE.Interpreter
 import           Language.LOLCODE.Parser
 
 import           Control.Monad.Trans
 import           System.Console.Haskeline
 import           System.Environment
 import           System.IO
-
 
 process :: String -> IO ()
 process line = do
@@ -27,10 +27,12 @@ runInteractive = runInputT defaultSettings loop
 parseFile :: String -> IO ()
 parseFile filename = do
     content <- readFile filename
-    let parsed = parseToplevel content
+    let parsed = parseToplevelStmtWithFilename filename content
     case parsed of
-      Left err -> print err
-      Right ex -> mapM_ print ex
+        Left err -> print err
+        Right prog -> do
+            run prog
+            return ()
 
 main :: IO ()
 main = do

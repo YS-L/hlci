@@ -307,5 +307,8 @@ parseExpr s = parse (contents expr) "<stdin>" s
 parseToplevel :: String -> Either ParseError [Expr]
 parseToplevel s = parse (contents toplevel) "<stdin>" s
 
+parseToplevelStmtWithFilename :: String -> String -> Either ParseError Stmt
+parseToplevelStmtWithFilename filename s = parse (contents statement) filename (canonicalize s)
+
 parseToplevelStmt :: String -> Either ParseError Stmt
-parseToplevelStmt s = parse (contents statement) "<stdin>" (canonicalize s)
+parseToplevelStmt s = parseToplevelStmtWithFilename "<stdin>" s
