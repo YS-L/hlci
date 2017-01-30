@@ -59,11 +59,12 @@ testInitEnv = checkRun code expected
         I HAS A SHIBA ITZ 1
         SHIBA
         |]
-        expected = emptyEnv { globals = [ ("attack", Function "attack" [] (Assign "SWORD" (Numbr 100)))
-                                        , ("defend", Function "defend" [] (Assign "ARMOR" (Numbr 100)))
-                                        ]
-                            , locals = [("IT", Numbr 1), ("SHIBA", Numbr 1)]
-                            }
+        expected = emptyEnv { globals =
+            [ ("defend", Function "defend" [] (Assign "ARMOR" (Numbr 100)))
+            , ("attack", Function "attack" [] (Assign "SWORD" (Numbr 100)))
+            ]
+            , locals = [("IT", Numbr 1), ("SHIBA", Numbr 1)]
+        }
 
 testCall :: Assertion
 testCall = checkStoreLocal code expected

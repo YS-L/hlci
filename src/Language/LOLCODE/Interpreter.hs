@@ -20,6 +20,8 @@ data Env = Env { globals      :: Store
 type Interp a = StateT Env IO a
 
 maxCallDepth = 10000
+initReturnId = 1
+initBreakId = 1
 
 lookupEnv :: (Env -> Store) -> String -> Interp Expr
 lookupEnv f name = do
@@ -244,6 +246,11 @@ pushLocal name ex = do
     env <- get
     put $ env { locals = (name, ex):(locals env) }
 
+pushGlobal :: String -> Expr -> Interp ()
+pushGlobal name ex = do
+    env <- get
+    put $ env { globals = (name, ex):(globals env) }
+
 popLocal :: String -> Interp ()
 popLocal name = do
     env <- get
@@ -292,6 +299,14 @@ exec (Declare name ex) = do
 exec (ExprStmt ex) = do
     ex' <- eval ex
     pushLocal "IT" ex'
+    case ex of
+        p@(Function name args code) -> do
+            env <- get
+            if return_id env == initReturnId then
+                pushGlobal name p
+            else
+                return () -- ignore non-global functions
+        _ -> return ()
 
 exec (Return ex) = do
     ex' <- eval ex
@@ -425,27 +440,15 @@ exec (Loop _ lop lcond s) = do
 
 exec p@_ = fail $ "Statement not implemented: " ++ show p
 
-globalFunctions :: Stmt -> Store
-globalFunctions prog = case prog of
-    Seq statements -> mapMaybe justFunction statements
-        where
-            justFunction s = case s of
-                ExprStmt ex -> case ex of
-                    Function name args code -> Just (name, Function name args code)
-                    _ -> Nothing
-                _ -> Nothing
-    ExprStmt ex -> globalFunctions $ Seq [ExprStmt ex]
-    _ -> []
-
 initGlobals :: Stmt -> Store
-initGlobals prog = globalFunctions prog
+initGlobals prog = []
 
 emptyEnv :: Env
 emptyEnv = Env { globals = []
                , locals = []
-               , return_id = 1
+               , return_id = initReturnId
                , return_token = 0
-               , break_id = 1
+               , break_id = initBreakId
                , break_token = 0
                , breakable = False
                }
