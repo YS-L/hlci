@@ -66,3 +66,14 @@ data LoopOp = Increment String
             deriving (Eq, Ord, Show)
 
 data LoopCond = Until Expr | While Expr | Forever deriving (Eq, Ord, Show)
+
+data StmtContext = StmtContext { filename    :: String
+                               , line_number :: Int }
+
+                 | EmptyContext
+                 deriving (Eq, Ord, Show)
+
+data StmtTagged
+    = SeqTagged [StmtTagged]
+    | StmtTagged Stmt StmtContext
+    deriving (Eq, Ord, Show)

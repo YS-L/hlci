@@ -156,6 +156,24 @@ sequenceOfStmt = do
         return $ st
     return $ if length list == 1 then head list else Seq list
 
+statementTagged :: Parser StmtTagged
+statementTagged =  sequenceOfStmtTagged
+
+sequenceOfStmtTagged :: Parser StmtTagged
+sequenceOfStmtTagged = do
+    list <- many $ do
+        pos <- getPosition
+        let tag = StmtContext { filename = sourceName pos
+                              , line_number = sourceLine pos }
+        st <- statement'
+        lineEnd
+        return $ StmtTagged st tag
+    return $ if length list == 1 then head list else SeqTagged list
+
+untag :: StmtTagged -> Stmt
+untag (SeqTagged lst) = Seq $ map untag lst
+untag (StmtTagged s _) = s
+
 statement' :: Parser Stmt
 statement' =  parens statement'
           <|> try assignStmt
@@ -302,3 +320,9 @@ parseToplevelStmtWithFilename filename s = parse (contents statement) filename (
 
 parseToplevelStmt :: String -> Either ParseError Stmt
 parseToplevelStmt s = parseToplevelStmtWithFilename "<stdin>" s
+
+parseToplevelStmtTaggedWithFilename :: String -> String -> Either ParseError StmtTagged
+parseToplevelStmtTaggedWithFilename filename s = parse (contents statementTagged) filename (canonicalize s)
+
+parseToplevelStmtTagged :: String -> Either ParseError StmtTagged
+parseToplevelStmtTagged s = parseToplevelStmtTaggedWithFilename "<stdin>" s

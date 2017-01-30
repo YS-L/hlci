@@ -19,9 +19,9 @@ checkExpr code expected = case parseToplevel (preprocess code) of
     Right ex -> ex @?= expected
 
 checkStmt :: String -> Stmt -> Assertion
-checkStmt code expected = case parseToplevelStmt (preprocess code) of
+checkStmt code expected = case parseToplevelStmtTagged (preprocess code) of
     Left err -> assertFailure $ show err
-    Right st -> st @?= expected
+    Right st -> untag st @?= expected
 
 testNumbr :: Assertion
 testNumbr = checkExpr "1" [Numbr 1]
