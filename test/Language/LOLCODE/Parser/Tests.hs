@@ -2,6 +2,7 @@
 
 module Language.LOLCODE.Parser.Tests where
 
+import           Data.List               (isInfixOf)
 import           Data.Maybe              (fromJust)
 import           Language.LOLCODE.Parser
 import           Language.LOLCODE.Syntax
@@ -11,7 +12,11 @@ import           Test.Tasty.HUnit        (testCase)
 import           Text.RawString.QQ
 
 preprocess :: String -> String
-preprocess code = "HAI 1.2\n" ++ code ++ "\nKTHXBYE"
+preprocess code = if isInfixOf "HAI" code
+    then
+        code
+    else
+        "HAI 1.2\n" ++ code ++ "\nKTHXBYE"
 
 checkExpr :: String -> [Expr] -> Assertion
 checkExpr code expected = case parseToplevel (preprocess code) of
@@ -301,6 +306,22 @@ testComment2 = checkStmt code expected
         |]
         expected = (ExprStmt (Var "a"))
 
+testComment3 :: Assertion
+testComment3 = checkStmt code expected
+    where
+        code = [r|
+        OBTW
+            THIS IS JUST A COMMENT AT THE TOP
+        TLDR
+
+        HAI 1.3
+
+        a BTW THIS IS OK -- BOB'S FREN
+
+        KTHXBYE
+        |]
+        expected = (ExprStmt (Var "a"))
+
 testCommaLineBreak :: Assertion
 testCommaLineBreak = checkStmt code expected
     where
@@ -469,6 +490,7 @@ tests = testGroup "Parser"
     , testCase "testReturn" testReturn
     , testCase "testComment1" testComment1
     , testCase "testComment2" testComment2
+    , testCase "testComment3" testComment3
     , testCase "testCommaLineBreak" testCommaLineBreak
     , testCase "testLoop1" testLoop1
     , testCase "testLoop2" testLoop2
