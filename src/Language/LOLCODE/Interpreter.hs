@@ -235,6 +235,10 @@ getNumericPair x y = do
         where
             f p@(Numbr _) q@(Numbar _) = eval (Cast p NumbarT) >>= (\p' -> return (p', q))
             f p@(Numbar _) q@(Numbr _) = eval (Cast q NumbarT) >>= (\q' -> return (p, q'))
+            f p@(Numbr _) q@_ = eval (Cast q NumbrT) >>= (\q' -> return (p, q'))
+            f p@(Numbar _) q@_ = eval (Cast q NumbarT) >>= (\q' -> return (p, q'))
+            f p@_ q@(Numbr _) = eval (Cast p NumbrT) >>= (\p' -> return (p', q))
+            f p@_ q@(Numbar _) = eval (Cast p NumbarT) >>= (\p' -> return (p', q))
             f p@_ q@_ = return (p, q)
 
 evalBoolOp :: (Bool -> Bool -> Bool) -> Expr -> Expr -> Interp Expr
