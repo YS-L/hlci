@@ -8,13 +8,14 @@ import           Language.LOLCODE.Syntax
 
 type Store = [(String, Expr)]
 
-data Env = Env { globals      :: Store
-               , locals       :: Store
-               , return_id    :: Int
-               , return_token :: Int
-               , break_id     :: Int
-               , break_token  :: Int
-               , breakable    :: Bool
+data Env = Env { globals        :: Store
+               , locals         :: Store
+               , return_id      :: Int
+               , return_token   :: Int
+               , break_id       :: Int
+               , break_token    :: Int
+               , breakable      :: Bool
+               , source_context :: StmtContext
                } deriving (Eq, Ord, Show)
 
 type Interp a = StateT Env IO a
@@ -23,11 +24,19 @@ maxCallDepth = 10000
 initReturnId = 1
 initBreakId = 1
 
+failMessage :: String -> Interp Expr
+failMessage s = do
+    env <- get
+    let ctx = source_context env
+        ln = line_number ctx
+        fn = filename ctx
+    liftIO $ fail $ "Line " ++ show ln ++ " in " ++ fn ++ ": " ++ s
+
 lookupEnv :: (Env -> Store) -> String -> Interp Expr
 lookupEnv f name = do
     env <- get
     case lookup name (f env) of
-        Nothing -> fail ("Unbounded variable '" ++ name ++ "'")
+        Nothing -> failMessage $ "Unbounded variable '" ++ name ++ "'"
         Just ex -> return ex
 
 eval :: Expr -> Interp Expr
@@ -239,8 +248,6 @@ evalBoolOpFold f exprs = do
     bools <- mapM evalAndCastBool exprs
     return $ Troof $ f bools
 
-exec :: Stmt -> Interp ()
-
 pushLocal :: String -> Expr -> Interp ()
 pushLocal name ex = do
     env <- get
@@ -266,7 +273,7 @@ evalAndCastBool ex = do
             Troof True -> True
             _ -> False
 
-selectOptions :: [(Expr, Stmt)] -> Interp (Maybe Stmt)
+selectOptions :: [(Expr, StmtTagged)] -> Interp (Maybe StmtTagged)
 selectOptions (x:xs) = do
     b <- evalAndCastBool $ fst x
     if b then
@@ -274,6 +281,28 @@ selectOptions (x:xs) = do
     else
         selectOptions xs
 selectOptions [] = return Nothing
+
+exec' :: StmtTagged -> Interp ()
+
+exec' (SeqTagged []) = return ()
+
+exec' (SeqTagged (s:ss)) = do
+    exec' s
+    env <- get
+    if (return_token env) == (return_id env) then
+        return ()
+    else
+        if (break_token env) == (break_id env) then
+            return ()
+        else
+            exec' (SeqTagged ss)
+
+exec' (StmtTagged st ctx) = do
+    env <- get
+    put $ env { source_context = ctx }
+    exec st
+
+exec :: Stmt -> Interp ()
 
 exec (Seq []) = return ()
 
@@ -340,16 +369,16 @@ exec (If yes pairs no) = do
         stmts = yes : map snd pairs
     pair <- selectOptions $ zip exprs stmts
     case pair of
-        Just s -> exec s
+        Just s -> exec' s
         Nothing -> case no of
-            Just p -> exec p
+            Just p -> exec' p
             Nothing -> return ()
 
 exec (Case pairs defc) = do
     ref <- lookupEnv locals "IT"
     let exprs = map fst pairs
         progs = map snd pairs
-        parts = map (\i -> Seq $ drop i progs) [0..(length progs - 1)]
+        parts = map (\i -> SeqTagged $ drop i progs) [0..(length progs - 1)]
     pair <- selectOptions $ zip (map (\x -> BinOp Saem x ref) exprs) parts
     case pair of
         Just s -> runCase s
@@ -357,11 +386,11 @@ exec (Case pairs defc) = do
             Just p -> runCase p
             Nothing -> return ()
     where
-        runCase :: Stmt -> Interp ()
+        runCase :: StmtTagged -> Interp ()
         runCase s = do
             env <- get
             enterCase env
-            exec s
+            exec' s
             exitCase env
         enterCase :: Env -> Interp ()
         enterCase env = do
@@ -392,7 +421,7 @@ exec (Loop _ lop lcond s) = do
         runLoop initEnv = do
             continue <- toContinue
             if continue then do
-                exec s
+                exec' s
                 env <- get
                 if ((return_token env) /= (return_id env) &&
                     (break_token env) /= (break_id env)) then do
@@ -451,6 +480,7 @@ emptyEnv = Env { globals = []
                , break_id = initBreakId
                , break_token = 0
                , breakable = False
+               , source_context = EmptyContext
                }
 
 initEnv :: Stmt -> Env
@@ -471,3 +501,22 @@ runOnEnv prog env = do
 
 run :: Stmt -> IO (Env)
 run prog = runOnEnv prog (initEnv prog)
+
+initGlobals' :: StmtTagged -> Store
+initGlobals' prog = []
+
+initEnv' :: StmtTagged -> Env
+initEnv' prog = emptyEnv { globals = initGlobals' prog
+                         , locals = []
+                         }
+
+runOnEnv' :: StmtTagged -> Env -> IO (Env)
+runOnEnv' prog env = do
+    (_, env') <- runStateT (exec' prog) env
+    let out = env' { globals = cleanup $ globals env'
+                   , locals = cleanup $ locals env'
+                   }
+    return out
+
+run' :: StmtTagged -> IO (Env)
+run' prog = runOnEnv' prog (initEnv' prog)
