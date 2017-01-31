@@ -68,29 +68,35 @@ eval (Cast (Yarn v) YarnT) = return $ Yarn v
 
 eval (Cast _ NoobT) = return $ Noob
 
-eval (Cast ex TroofT) = return $ Troof $ case ex of
-    Noob -> False
-    Numbr 0 -> False
-    Numbar 0.0 -> False
-    Yarn "" -> False
-    Troof b -> b
-    _ -> True
+eval (Cast ex TroofT) = do
+    ex' <- eval ex
+    return $ Troof $ case ex' of
+        Noob -> False
+        Numbr 0 -> False
+        Numbar 0.0 -> False
+        Yarn "" -> False
+        Troof b -> b
+        _ -> True
 
-eval (Cast ex NumbrT) = case ex of
-    Numbr v -> return $ Numbr v
-    Numbar v -> return $ Numbr $ truncate (v :: Double)
-    Troof True -> return $ Numbr 1
-    Troof False -> return $ Numbr 0
-    Yarn s -> return $ Numbr $ truncate (read s :: Double)
-    p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbr"
+eval (Cast ex NumbrT) = do
+    ex' <- eval ex
+    case ex' of
+        Numbr v -> return $ Numbr v
+        Numbar v -> return $ Numbr $ truncate (v :: Double)
+        Troof True -> return $ Numbr 1
+        Troof False -> return $ Numbr 0
+        Yarn s -> return $ Numbr $ truncate (read s :: Double)
+        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbr"
 
-eval (Cast ex NumbarT) = case ex of
-    Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
-    Numbar v -> return $ Numbar v
-    Troof True -> return $ Numbar 1.0
-    Troof False -> return $ Numbar 0.0
-    Yarn s -> return $ Numbar $ (read s :: Double)
-    p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbar"
+eval (Cast ex NumbarT) = do
+    ex' <- eval ex
+    case ex' of
+        Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
+        Numbar v -> return $ Numbar v
+        Troof True -> return $ Numbar 1.0
+        Troof False -> return $ Numbar 0.0
+        Yarn s -> return $ Numbar $ (read s :: Double)
+        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbar"
 
 eval (Cast p@_ vtype) = do
     ex <- eval p
