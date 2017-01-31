@@ -45,8 +45,15 @@ data Type
     | TroofT
     deriving (Eq, Ord, Show)
 
+data StmtContext = StmtContext { filename    :: String
+                               , line_number :: Int }
+
+                 | EmptyContext
+                 deriving (Eq, Ord, Show)
+
 data Stmt
     = Seq [Stmt]
+    | Tagged Stmt StmtContext
     | Print [Expr] Bool
     | Declare String Expr
     | Assign String Expr
@@ -66,14 +73,3 @@ data LoopOp = Increment String
             deriving (Eq, Ord, Show)
 
 data LoopCond = Until Expr | While Expr | Forever deriving (Eq, Ord, Show)
-
-data StmtContext = StmtContext { filename    :: String
-                               , line_number :: Int }
-
-                 | EmptyContext
-                 deriving (Eq, Ord, Show)
-
-data StmtTagged
-    = SeqTagged [StmtTagged]
-    | StmtTagged Stmt StmtContext
-    deriving (Eq, Ord, Show)

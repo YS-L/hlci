@@ -15,12 +15,18 @@ import           Text.RawString.QQ
 preprocess :: String -> String
 preprocess code = "HAI 1.2\n" ++ code ++ "\nKTHXBYE"
 
+untagStore :: Store -> Store
+untagStore = map (\x -> (fst x, untagExpr $ snd x))
+
 checkRun :: String -> Env -> Assertion
 checkRun code expected = case parseToplevelStmt (preprocess code) of
     Left err -> assertFailure $ show err
     Right prog -> do
         env <- run prog
-        env @?= expected
+        let env' = env { globals = untagStore $ globals env
+                       , locals = untagStore $ locals env
+                       , source_context = source_context expected }
+        env' @?= expected
 
 checkReturnId :: Env -> Assertion
 checkReturnId env = do
@@ -34,6 +40,7 @@ checkStore :: (Env -> Store) -> String -> [(String, Expr)] -> Assertion
 checkStore f code expected = case parseToplevelStmt (preprocess code) of
     Left err -> assertFailure $ show err
     Right prog -> do
+        --putStrLn $ show prog
         env <- run prog
         forM_ expected (\p -> case lookup (fst p) (f env) of
             Just x -> x @?= (snd p)
@@ -948,6 +955,28 @@ testLoopNested = checkStoreLocal code expected
         |]
         expected = [("out", Numbr 100)]
 
+testFail :: Assertion
+testFail = checkStoreLocal code expected
+    where
+        code = [r|
+        HOW IZ I foo
+
+            sum R 0
+
+            IM IN YR sumz UPPIN YR n1 TIL BOTH SAEM n1 10
+                IM IN YR sumz2 UPPIN YR n2 TIL BOTH SAEM n2 10
+                    sum R SUM OF sum daladala
+                IM OUTTA YR sumz2
+            IM OUTTA YR sumz
+
+            FOUND YR sum
+
+        IF U SAY SO
+
+        out R I IZ foo MKAY
+        |]
+        expected = [("out", Numbr 100)]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -998,4 +1027,5 @@ tests = testGroup "Interpreter"
     , testCase "testLoopWithinFunction2" testLoopWithinFunction2
     , testCase "testLoopWithinSwitch" testLoopWithinSwitch
     , testCase "testLoopNested" testLoopNested
+    -- , testCase "testFail" testFail
     ]

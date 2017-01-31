@@ -145,34 +145,43 @@ debugFail = do
     s <- stringLiteral
     return $ DebugFail s
 
+stmtContext :: Parser StmtContext
+stmtContext = do
+    pos <- getPosition
+    return StmtContext { filename = sourceName pos
+                       , line_number = sourceLine pos }
+
 statement :: Parser Stmt
-statement =  sequenceOfStmt
+statement = sequenceOfStmt
 
 sequenceOfStmt :: Parser Stmt
 sequenceOfStmt = do
-    list <- many $ do
-        st <- statement'
-        lineEnd
-        return $ st
-    return $ if length list == 1 then head list else Seq list
-
-statementTagged :: Parser StmtTagged
-statementTagged =  sequenceOfStmtTagged
-
-sequenceOfStmtTagged :: Parser StmtTagged
-sequenceOfStmtTagged = do
     list <- many $ do
         pos <- getPosition
         let tag = StmtContext { filename = sourceName pos
                               , line_number = sourceLine pos }
         st <- statement'
         lineEnd
-        return $ StmtTagged st tag
-    return $ if length list == 1 then head list else SeqTagged list
+        return $ Tagged st tag
+    return $ if length list == 1 then head list else Seq list
 
-untag :: StmtTagged -> Stmt
-untag (SeqTagged lst) = Seq $ map untag lst
-untag (StmtTagged s _) = s
+untag_pairs :: [(Expr, Stmt)] -> [(Expr, Stmt)]
+untag_pairs = map (\x -> (fst x, untag $ snd x))
+
+untag_maybe :: Maybe Stmt -> Maybe Stmt
+untag_maybe = fmap untag
+
+untagExpr :: Expr -> Expr
+untagExpr (Function name args prog) = Function name args (untag prog)
+untagExpr p@_ = p
+
+untag :: Stmt -> Stmt
+untag (Seq sts) = Seq $ map untag sts
+untag (Tagged (If yes maybes no) _) = If (untag yes) (untag_pairs maybes) (untag_maybe no)
+untag (Tagged (Case options defc) _) = Case (untag_pairs options) (untag_maybe defc)
+untag (Tagged (Loop label lop lcond prog) _) = Loop label lop lcond (untag prog)
+untag (Tagged st _) = untag st
+untag p@_ = p
 
 statement' :: Parser Stmt
 statement' =  parens statement'
@@ -320,9 +329,3 @@ parseToplevelStmtWithFilename filename s = parse (contents statement) filename (
 
 parseToplevelStmt :: String -> Either ParseError Stmt
 parseToplevelStmt s = parseToplevelStmtWithFilename "<stdin>" s
-
-parseToplevelStmtTaggedWithFilename :: String -> String -> Either ParseError StmtTagged
-parseToplevelStmtTaggedWithFilename filename s = parse (contents statementTagged) filename (canonicalize s)
-
-parseToplevelStmtTagged :: String -> Either ParseError StmtTagged
-parseToplevelStmtTagged s = parseToplevelStmtTaggedWithFilename "<stdin>" s

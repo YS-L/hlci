@@ -16,10 +16,10 @@ preprocess code = "HAI 1.2\n" ++ code ++ "\nKTHXBYE"
 checkExpr :: String -> [Expr] -> Assertion
 checkExpr code expected = case parseToplevel (preprocess code) of
     Left err -> assertFailure $ show err
-    Right ex -> ex @?= expected
+    Right ex -> map untagExpr ex @?= expected
 
 checkStmt :: String -> Stmt -> Assertion
-checkStmt code expected = case parseToplevelStmtTagged (preprocess code) of
+checkStmt code expected = case parseToplevelStmt (preprocess code) of
     Left err -> assertFailure $ show err
     Right st -> untag st @?= expected
 
