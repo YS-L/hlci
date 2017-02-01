@@ -5,6 +5,7 @@ import           Control.Monad.State     (StateT, get, liftIO, liftM, modify,
 import           Data.List               (find, intercalate, nubBy)
 import           Data.Maybe              (mapMaybe)
 import           Language.LOLCODE.Syntax
+import           Text.Printf             (printf)
 
 type Store = [(String, Expr)]
 
@@ -62,7 +63,7 @@ eval (Cast (Troof v) YarnT) = return $ Yarn s
 
 eval (Cast (Numbr v) YarnT) = return $ Yarn (show v)
 
-eval (Cast (Numbar v) YarnT) = return $ Yarn (show v)
+eval (Cast (Numbar v) YarnT) = return $ Yarn (printf "%.2f" v :: String)
 
 eval (Cast (Yarn v) YarnT) = return $ Yarn v
 
