@@ -82,6 +82,7 @@ eval (Cast ex TroofT) = do
 eval (Cast ex NumbrT) = do
     ex' <- eval ex
     case ex' of
+        Noob -> return $ Numbr 0
         Numbr v -> return $ Numbr v
         Numbar v -> return $ Numbr $ truncate (v :: Double)
         Troof True -> return $ Numbr 1
@@ -92,6 +93,7 @@ eval (Cast ex NumbrT) = do
 eval (Cast ex NumbarT) = do
     ex' <- eval ex
     case ex' of
+        Noob -> return $ Numbar 0.0
         Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
         Numbar v -> return $ Numbar v
         Troof True -> return $ Numbar 1.0
