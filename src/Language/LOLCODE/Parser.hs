@@ -44,9 +44,8 @@ numbr = do
     return $ Numbr n
 
 numbar :: Parser Expr
-numbar = do
-    n <- float
-    return $ Numbar n
+numbar =  (symbol "-" >> float >>= \x -> return $ Numbar ((-1) * x))
+      <|> (float >>= \x -> return $ Numbar x)
 
 troof :: Parser Expr
 troof = do

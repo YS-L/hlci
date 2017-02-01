@@ -53,7 +53,7 @@ eval (Troof v) = return (Troof v)
 
 eval (Var name) = lookupEnv locals name
 
-eval (Cast Noob YarnT) = return $ Yarn "Noob"
+eval (Cast Noob YarnT) = failMessage "Cannot cast Noob as string"
 
 eval (Cast (Troof v) YarnT) = return $ Yarn s
     where s = case v of

@@ -34,6 +34,9 @@ testNumbr = checkExpr "1" [Numbr 1]
 testNumbar :: Assertion
 testNumbar = checkExpr "1.0" [Numbar 1.0]
 
+testNumbar2 :: Assertion
+testNumbar2 = checkExpr "-1.0" [Numbar (-1.0)]
+
 testYarn :: Assertion
 testYarn = checkExpr "\"abc def\"" [Yarn "abc def"]
 
@@ -453,6 +456,7 @@ tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
     , testCase "testNumbar" testNumbar
+    , testCase "testNumbar2" testNumbar2
     , testCase "testYarn" testYarn
     , testCase "testVar" testVar
     , testCase "testCastTroof" testCastTroof
