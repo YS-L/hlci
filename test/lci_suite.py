@@ -79,10 +79,10 @@ class TestCase(object):
 
 def gen_tests(base):
     for root, dirs, files in os.walk(base):
-		if 'test.lol' not in files:
-			continue
-		test_case = TestCase.from_directory(root)
-		yield test_case
+        if 'test.lol' not in files:
+            continue
+        test_case = TestCase.from_directory(root)
+        yield test_case
 
 
 def main():
