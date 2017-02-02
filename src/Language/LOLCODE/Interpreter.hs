@@ -2,6 +2,7 @@ module Language.LOLCODE.Interpreter where
 
 import           Control.Monad.State     (StateT, get, liftIO, liftM, modify,
                                           put, runStateT)
+import           Data.Char               (isDigit)
 import           Data.List               (find, intercalate, nubBy)
 import           Data.Maybe              (mapMaybe)
 import           Language.LOLCODE.Syntax
@@ -40,6 +41,16 @@ lookupEnv f name = do
         Nothing -> failMessage $ "Unbounded variable '" ++ name ++ "'"
         Just ex -> return ex
 
+filterLeadingDigits :: String -> String
+filterLeadingDigits = takeWhile (\x -> (isDigit x) || (x == '.'))
+
+castStringToNumeric :: String -> Double
+castStringToNumeric s = case s' of
+    "" -> 0.0
+    v@_ -> read v :: Double
+    where
+        s' = filterLeadingDigits s
+
 cast :: Expr -> Type -> Interp Expr
 
 cast (Troof v) YarnT = return $ Yarn s
@@ -71,8 +82,8 @@ cast ex NumbrT = do
         Numbar v -> return $ Numbr $ truncate (v :: Double)
         Troof True -> return $ Numbr 1
         Troof False -> return $ Numbr 0
-        Yarn s -> return $ Numbr $ truncate (read s :: Double)
-        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbr"
+        Yarn s -> return $ Numbr $ truncate (castStringToNumeric s)
+        p@_ -> failMessage $ "Cannot cast " ++ show p ++ " to Numbr"
 
 cast ex NumbarT = do
     case ex of
@@ -81,8 +92,8 @@ cast ex NumbarT = do
         Numbar v -> return $ Numbar v
         Troof True -> return $ Numbar 1.0
         Troof False -> return $ Numbar 0.0
-        Yarn s -> return $ Numbar $ (read s :: Double)
-        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbar"
+        Yarn s -> return $ Numbar $ (castStringToNumeric s)
+        p@_ -> failMessage $ "Cannot cast " ++ show p ++ " to Numbar"
 
 cast p@_ q@_ = failMessage $ "Cannot cast " ++ (show p) ++ " to type " ++ (show q)
 
