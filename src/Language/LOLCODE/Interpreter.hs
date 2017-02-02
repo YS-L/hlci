@@ -27,7 +27,7 @@ maxCallDepth = 10000
 initReturnId = 1
 initBreakId = 1
 
-failMessage :: String -> Interp Expr
+failMessage :: String -> Interp a
 failMessage s = do
     env <- get
     let ctx = source_context env
@@ -243,7 +243,7 @@ evalNumeric ex = do
         p@(Yarn s) -> if '.' `elem` s
             then eval (Cast p NumbarT)
             else eval (Cast p NumbrT)
-        p@_ -> fail $ "Cannot be converted to numeric: " ++ show p
+        p@_ -> failMessage $ "Cannot be converted to numeric: " ++ show p
 
 getNumericPair :: Expr -> Expr -> Interp (Expr, Expr)
 getNumericPair x y = do
@@ -474,7 +474,7 @@ exec (Loop _ lop lcond s) = do
                 exec $ Assign name val
             _ -> return ()
 
-exec p@_ = fail $ "Statement not implemented: " ++ show p
+exec p@_ = failMessage $ "Statement not implemented: " ++ show p
 
 initGlobals :: Stmt -> Store
 initGlobals prog = []
