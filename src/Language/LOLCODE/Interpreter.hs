@@ -5,6 +5,7 @@ import           Control.Monad.State     (StateT, get, liftIO, liftM, modify,
 import           Data.Char               (isDigit)
 import           Data.List               (find, intercalate, nubBy)
 import           Data.Maybe              (mapMaybe)
+import           Data.String.Utils       (strip)
 import           Language.LOLCODE.Syntax
 import           Text.Printf             (printf)
 
@@ -42,7 +43,7 @@ lookupEnv f name = do
         Just ex -> return ex
 
 filterLeadingDigits :: String -> String
-filterLeadingDigits = takeWhile (\x -> (isDigit x) || (x == '.'))
+filterLeadingDigits = (takeWhile (\x -> (isDigit x) || (x == '.'))) . strip
 
 castStringToNumeric :: String -> Double
 castStringToNumeric s = case s' of
