@@ -851,7 +851,7 @@ testLoop5 = checkStoreLocal code expected
         IF U SAY SO
 
         sum R 0
-        IM IN YR sumz myUppin YR n TIL BOTH SAEM n 10
+        IM IN YR sumz I IZ myUppin YR n MKAY TIL BOTH SAEM n 10
             sum R SUM OF sum n
         IM OUTTA YR sumz
         |]

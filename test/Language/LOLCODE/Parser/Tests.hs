@@ -371,7 +371,7 @@ testLoop4 :: Assertion
 testLoop4 = checkStmt code expected
     where
         code = [r|
-        IM IN YR doge petting YR cat WILE BOTH SAEM cat 0
+        IM IN YR doge I IZ petting YR cat MKAY WILE BOTH SAEM cat 0
             dog R "SHIBA"
         IM OUTTA YR doge
         |]
@@ -381,7 +381,7 @@ testLoop5 :: Assertion
 testLoop5 = checkStmt code expected
     where
         code = [r|
-        IM IN YR doge petting YR cat
+        IM IN YR doge I IZ petting YR cat MKAY
             dog R "SHIBA"
             GTFO
         IM OUTTA YR doge

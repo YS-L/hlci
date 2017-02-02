@@ -280,7 +280,13 @@ loopStmt = do
 loopOp :: Parser LoopOp
 loopOp =  try (reserved "UPPIN" >> reserved "YR" >> identifier >>= return . Increment)
       <|> try (reserved "NERFIN" >> reserved "YR" >> identifier >>= return . Decrement)
-      <|> try (identifier >>= \f -> reserved "YR" >> identifier >>= return . UFunc f)
+      <|> try (do
+            reserved "I IZ"
+            f <- identifier
+            reserved "YR"
+            v <- identifier
+            reserved "MKAY"
+            return $ UFunc f v)
       <|> return Noop
 
 loopCond :: Parser LoopCond
