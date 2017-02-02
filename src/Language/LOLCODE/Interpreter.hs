@@ -82,7 +82,7 @@ eval (Cast ex TroofT) = do
 eval (Cast ex NumbrT) = do
     ex' <- eval ex
     case ex' of
-        Noob -> return $ Numbr 0
+        Noob  -> return $ Numbr 0
         Numbr v -> return $ Numbr v
         Numbar v -> return $ Numbr $ truncate (v :: Double)
         Troof True -> return $ Numbr 1
@@ -205,10 +205,8 @@ eval (BinOp Saem x y) = do
     y' <- eval y
     return $ op x' y'
         where
-            op (Numbr a) (Numbr b) = Troof (a == b)
             op (Numbr a) (Numbar b) = Troof (toDouble a == b)
             op (Numbar a) (Numbr b) = Troof (a == toDouble b)
-            op (Numbar a) (Numbar b) = Troof (a == b)
             op p@_ q@_ = Troof (p == q)
             toDouble v = fromIntegral v :: Double
 
