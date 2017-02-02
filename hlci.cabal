@@ -15,8 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
-                     , Language.LOLCODE.Lexer
+  exposed-modules:     Language.LOLCODE.Lexer
                      , Language.LOLCODE.Parser
                      , Language.LOLCODE.Syntax
                      , Language.LOLCODE.Interpreter
