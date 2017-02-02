@@ -189,7 +189,7 @@ eval (BinOp Mod x y) = do
     op x' y'
         where
             op (Numbr a) (Numbr b) = return $ Numbr (a `mod` b)
-            op (Numbar a) (Numbar b) = fail "MOD not supported for NUMBAR"
+            op (Numbar a) (Numbar b) = return $ Numbar a
 
 eval (BinOp Biggr x y) = do
     (x', y') <- getNumericPair x y
