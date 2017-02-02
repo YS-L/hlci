@@ -40,6 +40,9 @@ testNumbar2 = checkExpr "-1.0" [Numbar (-1.0)]
 testYarn :: Assertion
 testYarn = checkExpr "\"abc def\"" [Yarn "abc def"]
 
+testYarn2 :: Assertion
+testYarn2 = checkExpr "\"abc:) def:> yo::lo\"" [Yarn "abc\n def\t yo:lo"]
+
 testVar :: Assertion
 testVar = checkExpr "a" [Var "a"]
 
@@ -458,6 +461,7 @@ tests = testGroup "Parser"
     , testCase "testNumbar" testNumbar
     , testCase "testNumbar2" testNumbar2
     , testCase "testYarn" testYarn
+    , testCase "testYarn2" testYarn2
     , testCase "testVar" testVar
     , testCase "testCastTroof" testCastTroof
     , testCase "testCastNumbr" testCastNumbr

@@ -19,6 +19,16 @@ lineEndSymbol = ","
 lineEnd :: Parser ()
 lineEnd = optional . many . reserved $ lineEndSymbol
 
+escapeYarn :: String -> String
+escapeYarn = f1 . f2 . f3 . f4 . f5
+    where
+        f1 = replace ":)" "\n"
+        f2 = replace ":>" "\t"
+        --f3 = replace ":o" "\g"
+        f3 = id
+        f4 = replace ":\"" "\""
+        f5 = replace "::" ":"
+
 factor :: Parser Expr
 factor = try numbar
       <|> try numbr
@@ -57,7 +67,7 @@ troof = do
 yarn :: Parser Expr
 yarn = do
     s <- stringLiteral
-    return $ Yarn s
+    return $ Yarn (escapeYarn s)
 
 vtype :: Parser Type
 vtype =  (try $ symbol "TROOF" >> return TroofT)
