@@ -40,6 +40,52 @@ lookupEnv f name = do
         Nothing -> failMessage $ "Unbounded variable '" ++ name ++ "'"
         Just ex -> return ex
 
+cast :: Expr -> Type -> Interp Expr
+
+cast (Troof v) YarnT = return $ Yarn s
+    where s = case v of
+            True -> "WIN"
+            _ -> "FAIL"
+
+cast (Numbr v) YarnT = return $ Yarn (show v)
+
+cast (Numbar v) YarnT = return $ Yarn (printf "%.2f" v :: String)
+
+cast (Yarn v) YarnT = return $ Yarn v
+
+cast _ NoobT = return $ Noob
+
+cast ex TroofT = do
+    return $ Troof $ case ex of
+        Noob -> False
+        Numbr 0 -> False
+        Numbar 0.0 -> False
+        Yarn "" -> False
+        Troof b -> b
+        _ -> True
+
+cast ex NumbrT = do
+    case ex of
+        Noob  -> return $ Numbr 0
+        Numbr v -> return $ Numbr v
+        Numbar v -> return $ Numbr $ truncate (v :: Double)
+        Troof True -> return $ Numbr 1
+        Troof False -> return $ Numbr 0
+        Yarn s -> return $ Numbr $ truncate (read s :: Double)
+        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbr"
+
+cast ex NumbarT = do
+    case ex of
+        Noob -> return $ Numbar 0.0
+        Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
+        Numbar v -> return $ Numbar v
+        Troof True -> return $ Numbar 1.0
+        Troof False -> return $ Numbar 0.0
+        Yarn s -> return $ Numbar $ (read s :: Double)
+        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbar"
+
+cast p@_ q@_ = failMessage $ "Cannot cast " ++ (show p) ++ " to type " ++ (show q)
+
 eval :: Expr -> Interp Expr
 
 eval Noob = return Noob
@@ -54,56 +100,9 @@ eval (Troof v) = return (Troof v)
 
 eval (Var name) = lookupEnv locals name
 
-eval (Cast Noob YarnT) = failMessage "Cannot cast Noob as string"
-
-eval (Cast (Troof v) YarnT) = return $ Yarn s
-    where s = case v of
-            True -> "WIN"
-            _ -> "FAIL"
-
-eval (Cast (Numbr v) YarnT) = return $ Yarn (show v)
-
-eval (Cast (Numbar v) YarnT) = return $ Yarn (printf "%.2f" v :: String)
-
-eval (Cast (Yarn v) YarnT) = return $ Yarn v
-
-eval (Cast _ NoobT) = return $ Noob
-
-eval (Cast ex TroofT) = do
-    ex' <- eval ex
-    return $ Troof $ case ex' of
-        Noob -> False
-        Numbr 0 -> False
-        Numbar 0.0 -> False
-        Yarn "" -> False
-        Troof b -> b
-        _ -> True
-
-eval (Cast ex NumbrT) = do
-    ex' <- eval ex
-    case ex' of
-        Noob  -> return $ Numbr 0
-        Numbr v -> return $ Numbr v
-        Numbar v -> return $ Numbr $ truncate (v :: Double)
-        Troof True -> return $ Numbr 1
-        Troof False -> return $ Numbr 0
-        Yarn s -> return $ Numbr $ truncate (read s :: Double)
-        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbr"
-
-eval (Cast ex NumbarT) = do
-    ex' <- eval ex
-    case ex' of
-        Noob -> return $ Numbar 0.0
-        Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
-        Numbar v -> return $ Numbar v
-        Troof True -> return $ Numbar 1.0
-        Troof False -> return $ Numbar 0.0
-        Yarn s -> return $ Numbar $ (read s :: Double)
-        p@_ -> fail $ "Cannot cast " ++ show p ++ " to Numbar"
-
 eval (Cast p@_ vtype) = do
     ex <- eval p
-    eval $ Cast ex vtype
+    cast ex vtype
 
 eval p@(Function name args body) = return p
 
