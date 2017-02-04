@@ -233,7 +233,8 @@ castStmt1 = do
 castStmt2 :: Parser Stmt
 castStmt2 = do
     name <- identifier
-    reserved "R MAEK"
+    reserved "R"
+    optional (reserved "MAEK")
     optional (reserved "A")
     tp <- vtype
     return $ Cast2 name tp
