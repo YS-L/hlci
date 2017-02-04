@@ -463,6 +463,22 @@ testVisible = checkStmt code expected
         s1 = Print [(Yarn "SHIBA"), (Yarn "INU")] True
         s2 = ExprStmt (Numbr 123)
 
+testLineSeparator1 :: Assertion
+testLineSeparator1 = checkStmt code expected
+    where
+        code = [r|
+        var R 1, var R 2
+        |]
+        expected = Seq [Assign "var" (Numbr 1), Assign "var" (Numbr 2)]
+
+testLineSeparator2 :: Assertion
+testLineSeparator2 = checkStmt code expected
+    where
+        code = [r|
+        var R 1,var R 2        BTW no space between comma
+        |]
+        expected = Seq [Assign "var" (Numbr 1), Assign "var" (Numbr 2)]
+
 tests :: TestTree
 tests = testGroup "Parser"
     [ testCase "testNumbr" testNumbr
@@ -519,4 +535,6 @@ tests = testGroup "Parser"
     , testCase "testSwitch2" testSwitch2
     , testCase "testParens" testParens
     , testCase "testVisible" testVisible
+    , testCase "testLineSeparator1" testLineSeparator1
+    , testCase "testLineSeparator2" testLineSeparator2
     ]

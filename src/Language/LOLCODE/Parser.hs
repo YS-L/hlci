@@ -18,7 +18,7 @@ lineEndSymbol = ","
 
 -- Should be used explicitly when parsing multi-line expressions or statements
 lineEnd :: Parser ()
-lineEnd = optional . many . reserved $ lineEndSymbol
+lineEnd = optional . many . symbol $ lineEndSymbol
 
 escapeYarn :: String -> String
 escapeYarn = f1 . f2 . f3 . f4 . f5
