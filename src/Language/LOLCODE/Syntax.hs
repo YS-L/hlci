@@ -55,6 +55,7 @@ data Stmt
     = Seq [Stmt]
     | Tagged Stmt StmtContext
     | Print [Expr] Bool
+    | Read String
     | Declare String Expr
     | Assign String Expr
     | Cast2 String Type

@@ -201,6 +201,7 @@ statement' =  parens statement'
           <|> try ifStmt
           <|> try exprStmt
           <|> try printStmt
+          <|> try readStmt
           <|> try returnStmt
           <|> try loopStmt
           <|> try breakStmt
@@ -266,6 +267,12 @@ printStmt = do
             Just _ -> False
             Nothing -> True
     return $ Print exprs newline
+
+readStmt :: Parser Stmt
+readStmt = do
+    reserved "GIMMEH"
+    name <- identifier
+    return $ Read name
 
 returnStmt :: Parser Stmt
 returnStmt = (reserved "FOUND YR") >> expr >>= (return . Return)
