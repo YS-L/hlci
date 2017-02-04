@@ -10,6 +10,7 @@ import qualified Text.Parsec.Token       as Tok
 import           Language.LOLCODE.Lexer
 import           Language.LOLCODE.Syntax
 
+import           Control.Monad           (liftM)
 import           Data.List.Utils         (replace)
 
 -- Input will be canonicalized by appending this symbol to end of each line
@@ -59,7 +60,7 @@ numbar =  (symbol "-" >> float >>= \x -> return $ Numbar ((-1) * x))
 
 troof :: Parser Expr
 troof = do
-    s <- (try $ symbol "WIN") <|> (try $ symbol "FAIL")
+    s <- try (symbol "WIN") <|> try (symbol "FAIL")
     case s of
         "WIN" -> return $ Troof True
         _ -> return $ Troof False
@@ -70,11 +71,11 @@ yarn = do
     return $ Yarn (escapeYarn s)
 
 vtype :: Parser Type
-vtype =  (try $ symbol "TROOF" >> return TroofT)
-     <|> (try $ symbol "NUMBR" >> return NumbrT)
-     <|> (try $ symbol "NUMBAR" >> return NumbarT)
-     <|> (try $ symbol "YARN" >> return YarnT)
-     <|> (try $ symbol "NOOB" >> return NoobT)
+vtype =  try (symbol "TROOF" >> return TroofT)
+     <|> try (symbol "NUMBR" >> return NumbrT)
+     <|> try (symbol "NUMBAR" >> return NumbarT)
+     <|> try (symbol "YARN" >> return YarnT)
+     <|> try (symbol "NOOB" >> return NoobT)
 
 cast :: Parser Expr
 cast = do
@@ -116,18 +117,18 @@ smoosh = do
 
 binaryOp :: Parser Expr
 binaryOp = do
-    op <- (try $ symbol "SUM OF"  >> return Sum)
-      <|> (try $ symbol "DIFF OF" >> return Diff)
-      <|> (try $ symbol "PRODUKT OF" >> return Produkt)
-      <|> (try $ symbol "QUOSHUNT OF" >> return Quoshunt)
-      <|> (try $ symbol "MOD OF" >> return Mod)
-      <|> (try $ symbol "BIGGR OF" >> return Biggr)
-      <|> (try $ symbol "SMALLR OF" >> return Smallr)
-      <|> (try $ symbol "BOTH OF" >> return Both)
-      <|> (try $ symbol "EITHER OF" >> return Either)
-      <|> (try $ symbol "WON OF" >> return Won)
-      <|> (try $ symbol "BOTH SAEM" >> return Saem)
-      <|> (try $ symbol "DIFFRINT" >> return Diffrint)
+    op <- try (symbol "SUM OF"  >> return Sum)
+      <|> try (symbol "DIFF OF" >> return Diff)
+      <|> try (symbol "PRODUKT OF" >> return Produkt)
+      <|> try (symbol "QUOSHUNT OF" >> return Quoshunt)
+      <|> try (symbol "MOD OF" >> return Mod)
+      <|> try (symbol "BIGGR OF" >> return Biggr)
+      <|> try (symbol "SMALLR OF" >> return Smallr)
+      <|> try (symbol "BOTH OF" >> return Both)
+      <|> try (symbol "EITHER OF" >> return Either)
+      <|> try (symbol "WON OF" >> return Won)
+      <|> try (symbol "BOTH SAEM" >> return Saem)
+      <|> try (symbol "DIFFRINT" >> return Diffrint)
     a <- expr
     optional $ reserved "AN"
     b <- expr
@@ -135,8 +136,8 @@ binaryOp = do
 
 naryOp :: Parser Expr
 naryOp = do
-    op <- (try $ symbol "ALL" >> return All)
-      <|> (try $ symbol "ANY" >> return Any)
+    op <- try (symbol "ALL" >> return All)
+      <|> try (symbol "ANY" >> return Any)
     reserved "OF"
     exprs <- sepBy expr (optional $ reserved "AN")
     reserved "MKAY"
@@ -174,11 +175,11 @@ sequenceOfStmt = do
         return $ Tagged st tag
     return $ if length list == 1 then head list else Seq list
 
-untag_pairs :: [(Expr, Stmt)] -> [(Expr, Stmt)]
-untag_pairs = map (\x -> (fst x, untag $ snd x))
+untagPairs :: [(Expr, Stmt)] -> [(Expr, Stmt)]
+untagPairs = map (\x -> (fst x, untag $ snd x))
 
-untag_maybe :: Maybe Stmt -> Maybe Stmt
-untag_maybe = fmap untag
+untagMaybe :: Maybe Stmt -> Maybe Stmt
+untagMaybe = fmap untag
 
 untagExpr :: Expr -> Expr
 untagExpr (Function name args prog) = Function name args (untag prog)
@@ -186,8 +187,8 @@ untagExpr p@_ = p
 
 untag :: Stmt -> Stmt
 untag (Seq sts) = Seq $ map untag sts
-untag (Tagged (If yes maybes no) _) = If (untag yes) (untag_pairs maybes) (untag_maybe no)
-untag (Tagged (Case options defc) _) = Case (untag_pairs options) (untag_maybe defc)
+untag (Tagged (If yes maybes no) _) = If (untag yes) (untagPairs maybes) (untagMaybe no)
+untag (Tagged (Case options defc) _) = Case (untagPairs options) (untagMaybe defc)
 untag (Tagged (Loop label lop lcond prog) _) = Loop label lop lcond (untag prog)
 untag (Tagged st _) = untag st
 untag p@_ = p
@@ -221,7 +222,7 @@ declareStmt = do
     initialized <- optionMaybe (reserved "ITZ")
     case initialized of
         Nothing -> return $ Declare name Noob
-        Just _ -> expr >>= (return . Declare name)
+        Just _ -> liftM (Declare name) expr
 
 castStmt1 :: Parser Stmt
 castStmt1 = do
@@ -249,7 +250,7 @@ ifStmt = do
         ex <- expr;
         lineEnd
         st <- statement
-        return $ (ex, st)
+        return (ex, st)
     no <- optionMaybe $ reserved "NO WAI" >> lineEnd >> statement
     reserved "OIC" >> lineEnd
     return $ If yes maybes no
@@ -276,10 +277,10 @@ readStmt = do
     return $ Read name
 
 returnStmt :: Parser Stmt
-returnStmt = (reserved "FOUND YR") >> expr >>= (return . Return)
+returnStmt = liftM Return (reserved "FOUND YR" >> expr)
 
 breakStmt :: Parser Stmt
-breakStmt = (reserved "GTFO") >> (return Break)
+breakStmt = reserved "GTFO" >> return Break
 
 loopStmt :: Parser Stmt
 loopStmt = do
@@ -296,8 +297,8 @@ loopStmt = do
     return $ Loop label op cond prog
 
 loopOp :: Parser LoopOp
-loopOp =  try (reserved "UPPIN" >> reserved "YR" >> identifier >>= return . Increment)
-      <|> try (reserved "NERFIN" >> reserved "YR" >> identifier >>= return . Decrement)
+loopOp =  liftM Increment (try (reserved "UPPIN" >> reserved "YR" >> identifier))
+      <|> liftM Decrement (try (reserved "NERFIN" >> reserved "YR" >> identifier))
       <|> try (do
             reserved "I IZ"
             f <- identifier
@@ -308,14 +309,14 @@ loopOp =  try (reserved "UPPIN" >> reserved "YR" >> identifier >>= return . Incr
       <|> return Noop
 
 loopCond :: Parser LoopCond
-loopCond =  ((try $ reserved "TIL") >> expr >>= return . Until)
-        <|> ((try $ reserved "WILE") >> expr >>= return . While)
+loopCond =  liftM Until (try (reserved "TIL") >> expr)
+        <|> liftM While (try (reserved "WILE") >> expr)
         <|> return Forever
 
 caseStmt :: Parser Stmt
 caseStmt = do
     reserved "WTF?" >> lineEnd
-    conds <- many $ (do
+    conds <- many (do
         reserved "OMG"
         cond <- valueLiteral
         lineEnd
@@ -345,10 +346,10 @@ canonicalize :: String -> String
 canonicalize = replace "\n" (lineEndSymbol ++ "\n")
 
 parseToplevel :: String -> Either ParseError [Expr]
-parseToplevel s = parse (contents $ many expr) "<stdin>" s
+parseToplevel = parse (contents $ many expr) "<stdin>"
 
 parseToplevelStmtWithFilename :: String -> String -> Either ParseError Stmt
 parseToplevelStmtWithFilename filename s = parse (contents statement) filename (canonicalize s)
 
 parseToplevelStmt :: String -> Either ParseError Stmt
-parseToplevelStmt s = parseToplevelStmtWithFilename "<stdin>" s
+parseToplevelStmt = parseToplevelStmtWithFilename "<stdin>"
