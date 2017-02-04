@@ -21,7 +21,7 @@ hlci filename.lol
 or via stack without installing:
 
 ```
-stack exec hcli filename.lol
+stack exec hlci filename.lol
 ```
 
 ## Reference
