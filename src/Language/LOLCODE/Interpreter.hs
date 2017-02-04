@@ -131,7 +131,7 @@ eval (Call name exprs) = do
                       , breakable = False
                       }
             if return_id env > maxCallDepth then
-                fail $ "Maximum call depth reached: " ++ (show maxCallDepth)
+                failMessage $ "Maximum call depth reached: " ++ (show maxCallDepth)
             else
                 exec prog
             ret <- lookupEnv locals "IT"
@@ -229,9 +229,9 @@ eval (NaryOp All exprs) = evalBoolOpFold and exprs
 
 eval (NaryOp Any exprs) = evalBoolOpFold or exprs
 
-eval (DebugFail s) = fail $ "Debug fail: " ++ s
+eval (DebugFail s) = failMessage $ "Debug fail: " ++ s
 
-eval p@_ = fail $ "Expression not implemented: " ++ show p
+eval p@_ = failMessage $ "Expression not implemented: " ++ show p
 
 evalNumeric :: Expr -> Interp Expr
 evalNumeric ex = do
