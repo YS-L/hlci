@@ -1,8 +1,10 @@
 module Language.LOLCODE.Interpreter where
 
+import           Control.Monad           (unless, when)
 import           Control.Monad.State     (StateT, get, liftIO, liftM, modify,
                                           put, runStateT)
 import           Data.Char               (isDigit)
+import           Data.Function           (on)
 import           Data.List               (find, intercalate, nubBy)
 import           Data.Maybe              (mapMaybe)
 import           Data.String.Utils       (strip)
@@ -43,10 +45,10 @@ lookupEnv f name = do
         Just ex -> return ex
 
 filterLeadingDigits :: String -> String
-filterLeadingDigits = (takeWhile (\x -> (isDigit x) || (x == '.'))) . strip
+filterLeadingDigits = takeWhile (\x -> isDigit x || x == '.') . strip
 
 truncateFloat :: Double -> Int -> Double
-truncateFloat v n = (fromInteger $ truncate $ v * (10^n)) / (10.0^^n)
+truncateFloat v n = fromInteger (truncate $ v * (10^n)) / (10.0^^n)
 
 castStringToNumeric :: String -> Double
 castStringToNumeric s = case s' of
@@ -57,10 +59,7 @@ castStringToNumeric s = case s' of
 
 cast :: Expr -> Type -> Interp Expr
 
-cast (Troof v) YarnT = return $ Yarn s
-    where s = case v of
-            True -> "WIN"
-            _ -> "FAIL"
+cast (Troof v) YarnT = return $ Yarn (if v then "WIN" else "FAIL")
 
 cast (Numbr v) YarnT = return $ Yarn (show v)
 
@@ -68,9 +67,9 @@ cast (Numbar v) YarnT = return $ Yarn (printf "%.2f" (truncateFloat v 2) :: Stri
 
 cast (Yarn v) YarnT = return $ Yarn v
 
-cast _ NoobT = return $ Noob
+cast _ NoobT = return Noob
 
-cast ex TroofT = do
+cast ex TroofT =
     return $ Troof $ case ex of
         Noob -> False
         Numbr 0 -> False
@@ -79,7 +78,7 @@ cast ex TroofT = do
         Troof b -> b
         _ -> True
 
-cast ex NumbrT = do
+cast ex NumbrT =
     case ex of
         Noob  -> return $ Numbr 0
         Numbr v -> return $ Numbr v
@@ -89,17 +88,17 @@ cast ex NumbrT = do
         Yarn s -> return $ Numbr $ truncate (castStringToNumeric s)
         p@_ -> failMessage $ "Cannot cast " ++ show p ++ " to Numbr"
 
-cast ex NumbarT = do
+cast ex NumbarT =
     case ex of
         Noob -> return $ Numbar 0.0
-        Numbr v -> return $ Numbar ((fromIntegral v) :: Double)
+        Numbr v -> return $ Numbar (fromIntegral v :: Double)
         Numbar v -> return $ Numbar v
         Troof True -> return $ Numbar 1.0
         Troof False -> return $ Numbar 0.0
-        Yarn s -> return $ Numbar $ (castStringToNumeric s)
+        Yarn s -> return $ Numbar $ castStringToNumeric s
         p@_ -> failMessage $ "Cannot cast " ++ show p ++ " to Numbar"
 
-cast p@_ q@_ = failMessage $ "Cannot cast " ++ (show p) ++ " to type " ++ (show q)
+cast p@_ q@_ = failMessage $ "Cannot cast " ++ show p ++ " to type " ++ show q
 
 eval :: Expr -> Interp Expr
 
@@ -134,7 +133,7 @@ eval (Call name exprs) = do
                       , breakable = False
                       }
             if return_id env > maxCallDepth then
-                failMessage $ "Maximum call depth reached: " ++ (show maxCallDepth)
+                failMessage $ "Maximum call depth reached: " ++ show maxCallDepth
             else
                 exec prog
             ret <- lookupEnv locals "IT"
@@ -212,7 +211,7 @@ eval (BinOp Both x y) = evalBoolOp (&&) x y
 
 eval (BinOp Either x y) = evalBoolOp (||) x y
 
-eval (BinOp Won x y) = evalBoolOp (\p q -> (p || q) && (not (p && q))) x y
+eval (BinOp Won x y) = evalBoolOp (\p q -> (p || q) && not (p && q)) x y
 
 eval (BinOp Saem x y) = do
     x' <- eval x
@@ -276,19 +275,19 @@ evalBoolOpFold f exprs = do
 pushLocal :: String -> Expr -> Interp ()
 pushLocal name ex = do
     env <- get
-    put $ env { locals = (name, ex):(locals env) }
+    put $ env { locals = (name, ex):locals env }
 
 pushGlobal :: String -> Expr -> Interp ()
 pushGlobal name ex = do
     env <- get
-    put $ env { globals = (name, ex):(globals env) }
+    put $ env { globals = (name, ex):globals env }
 
 popLocal :: String -> Interp ()
 popLocal name = do
     env <- get
-    put $ env { locals = filter (\x -> (fst x) /= name) (locals env) }
+    put $ env { locals = filter (\x -> fst x /= name) (locals env) }
 
-evalAndCastBool :: Expr -> Interp (Bool)
+evalAndCastBool :: Expr -> Interp Bool
 evalAndCastBool ex = do
     ex' <- eval ex
     troof <- eval (Cast ex' TroofT)
@@ -314,13 +313,8 @@ exec (Seq []) = return ()
 exec (Seq (s:ss)) = do
     exec s
     env <- get
-    if (return_token env) == (return_id env) then
-        return ()
-    else
-        if (break_token env) == (break_id env) then
-            return ()
-        else
-            exec (Seq ss)
+    unless (return_token env == return_id env || break_token env == break_id env)
+        (exec (Seq ss))
 
 exec (Tagged st ctx) = do
     env <- get
@@ -341,10 +335,8 @@ exec (ExprStmt ex) = do
     case ex of
         p@(Function name args code) -> do
             env <- get
-            if return_id env == initReturnId then
-                pushGlobal name p
-            else
-                return () -- ignore non-global functions
+            -- ignore non-global functions
+            when (return_id env == initReturnId) $ pushGlobal name p
         _ -> return ()
 
 exec (Return ex) = do
@@ -355,7 +347,7 @@ exec (Return ex) = do
 
 exec Break = do
     env <- get
-    if breakable env then do
+    if breakable env then
         put $ env { break_token = break_id env }
     else do
         pushLocal "IT" Noob
@@ -364,10 +356,8 @@ exec Break = do
 
 exec (Print exprs newline) = do
     Yarn s <- eval $ Smoosh exprs
-    liftIO $ putStr $ s
-    case newline of
-        True -> liftIO $ putStr "\n"
-        _ -> return ()
+    liftIO $ putStr s
+    when newline $ liftIO (putStr "\n")
 
 exec (Read name) = do
     s <- liftIO getLine
@@ -407,14 +397,13 @@ exec (Case pairs defc) = do
             exec s
             exitCase env
         enterCase :: Env -> Interp ()
-        enterCase env = do
-            put $ env { break_id = (break_id env) + 1
-                      , break_token = 0
-                      , breakable = True }
+        enterCase env = put $ env { break_id = break_id env + 1
+                                  , break_token = 0
+                                  , breakable = True }
         exitCase :: Env -> Interp ()
         exitCase env = do
             env' <- get
-            put env' { locals = (locals env') ++ (locals env)
+            put env' { locals = locals env' ++ locals env
                      , break_id = break_id env
                      , break_token = 0
                      , breakable = breakable env }
@@ -426,7 +415,7 @@ exec (Loop _ lop lcond s) = do
         UFunc _ name -> pushLocal name (Numbr 0)
         _ -> return ()
     env <- get
-    put $ env { break_id = (break_id env) + 1
+    put $ env { break_id = break_id env + 1
               , break_token = 0
               , breakable = True }
     runLoop env
@@ -437,8 +426,8 @@ exec (Loop _ lop lcond s) = do
             if continue then do
                 exec s
                 env <- get
-                if ((return_token env) /= (return_id env) &&
-                    (break_token env) /= (break_id env)) then do
+                if return_token env /= return_id env &&
+                   break_token env /= break_id env then do
                     stepLoop
                     runLoop initEnv
                 else
@@ -454,7 +443,7 @@ exec (Loop _ lop lcond s) = do
                 UFunc _ name -> popLocal name
                 _ -> return ()
             env' <- get
-            put env' { locals = (locals env') ++ (locals env)
+            put env' { locals = locals env' ++ locals env
                      , break_id = break_id env
                      , break_token = 0
                      , breakable = breakable env }
@@ -503,9 +492,9 @@ initEnv prog = emptyEnv { globals = initGlobals prog
                         }
 
 cleanup :: Store -> Store
-cleanup store = nubBy (\a b -> fst a == fst b) store
+cleanup = nubBy ((==) `on` fst)
 
-runOnEnv :: Stmt -> Env -> IO (Env)
+runOnEnv :: Stmt -> Env -> IO Env
 runOnEnv prog env = do
     (_, env') <- runStateT (exec prog) env
     let out = env' { globals = cleanup $ globals env'
@@ -513,5 +502,5 @@ runOnEnv prog env = do
                    }
     return out
 
-run :: Stmt -> IO (Env)
+run :: Stmt -> IO Env
 run prog = runOnEnv prog (initEnv prog)
