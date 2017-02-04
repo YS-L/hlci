@@ -985,6 +985,14 @@ testNumbarPrecision = checkStoreLocal code expected
         |]
         expected = [("out1", Yarn "1.00")]
 
+testNumbarPrecision2 :: Assertion
+testNumbarPrecision2 = checkStoreLocal code expected
+    where
+        code = [r|
+        out1 R MAEK 1.599 A YARN
+        |]
+        expected = [("out1", Yarn "1.59")]
+
 tests :: TestTree
 tests = testGroup "Interpreter"
     [ testCase "testInitEnv" testInitEnv
@@ -1037,4 +1045,5 @@ tests = testGroup "Interpreter"
     , testCase "testLoopNested" testLoopNested
     -- , testCase "testFail" testFail
     , testCase "testNumbarPrecision" testNumbarPrecision
+    , testCase "testNumbarPrecision2" testNumbarPrecision2
     ]

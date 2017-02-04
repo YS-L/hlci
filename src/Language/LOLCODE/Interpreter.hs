@@ -45,6 +45,9 @@ lookupEnv f name = do
 filterLeadingDigits :: String -> String
 filterLeadingDigits = (takeWhile (\x -> (isDigit x) || (x == '.'))) . strip
 
+truncateFloat :: Double -> Int -> Double
+truncateFloat v n = (fromInteger $ truncate $ v * (10^n)) / (10.0^^n)
+
 castStringToNumeric :: String -> Double
 castStringToNumeric s = case s' of
     "" -> 0.0
@@ -61,7 +64,7 @@ cast (Troof v) YarnT = return $ Yarn s
 
 cast (Numbr v) YarnT = return $ Yarn (show v)
 
-cast (Numbar v) YarnT = return $ Yarn (printf "%.2f" v :: String)
+cast (Numbar v) YarnT = return $ Yarn (printf "%.2f" (truncateFloat v 2) :: String)
 
 cast (Yarn v) YarnT = return $ Yarn v
 
