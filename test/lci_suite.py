@@ -2,6 +2,7 @@ import os
 import argparse
 import subprocess
 from pprint import pprint
+from StringIO import StringIO
 
 
 class TestCase(object):
@@ -11,10 +12,12 @@ class TestCase(object):
     SHOULD_ERROR = 2
     SHOULD_NOT_ERROR = 3
 
-    def __init__(self, path, source, content, expected_out, expected_error, readme):
+    def __init__(self, path, source, content, infile, expected_out,
+                 expected_error, readme):
         self.path = path
         self.source = source
         self.content = content
+        self.infile = infile
         self.expected_out = expected_out
         self.expected_error = expected_error
         self.readme = readme
@@ -43,13 +46,24 @@ class TestCase(object):
                 readme = f.read()
         else:
             readme = ''
-        return cls(path, source, content, expected_out, expected_error, readme)
+        if 'test.in' in filenames:
+            infile = os.path.join(path, 'test.in')
+        else:
+            infile = None
+        return cls(path, source, content, infile, expected_out, expected_error,
+                   readme)
 
     def run(self, executable):
         cmd = [executable]
         cmd.append(self.source)
         try:
-            self.out = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            if self.infile is not None:
+                with open(self.infile) as f:
+                    self.out = subprocess.check_output(
+                        cmd, stderr=subprocess.STDOUT, stdin=f)
+            else:
+                self.out = subprocess.check_output(
+                    cmd, stderr=subprocess.STDOUT)
             if self.expected_error is not None:
                 self.status = self.SHOULD_ERROR
             elif self.out != self.expected_out:
@@ -64,11 +78,19 @@ class TestCase(object):
                 self.status = self.MATCH
 
     def __repr__(self):
+
+        def header(s):
+            return '\n' + '=' * 10 + s + '=' * 10 + '\n'
+
         s = ''
         s += '\n========== TestCase ==========\n'
         s += '{}: {}'.format(self.path, self.readme)
         s += '\n========== Source ==========\n'
         s += self.content
+        if self.infile is not None:
+            s += header('Input')
+            with open(self.infile) as f:
+                s += f.read()
         s += '\n========== Expected ==========\n'
         s += str(self.expected_out)
         if self.status != self.MATCH:

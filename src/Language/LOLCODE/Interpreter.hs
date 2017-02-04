@@ -366,6 +366,10 @@ exec (Print exprs newline) = do
         True -> liftIO $ putStr "\n"
         _ -> return ()
 
+exec (Read name) = do
+    s <- liftIO getLine
+    pushLocal name (Yarn s)
+
 exec (Cast2 name tp) = do
     ex <- lookupEnv locals name >>= \x -> eval $ Cast x tp
     pushLocal name ex
