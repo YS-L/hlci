@@ -1,13 +1,13 @@
 name:                hlci
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            A LOLCODE interpreter
 description:         Please see README.md
-homepage:            https://github.com/githubuser/hlci#readme
+homepage:            https://github.com/YS-L/hlci
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
+author:              Yung Siang Liau
+maintainer:          liauys@gmail.com
+copyright:           2017 Yung Siang Liau
 category:            Web
 build-type:          Simple
 extra-source-files:  README.md
@@ -52,4 +52,4 @@ test-suite hlci-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/hlci
+  location: https://github.com/YS-L/hlci
