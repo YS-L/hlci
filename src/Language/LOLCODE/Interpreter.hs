@@ -63,7 +63,7 @@ cast (Troof v) YarnT = return $ Yarn (if v then "WIN" else "FAIL")
 
 cast (Numbr v) YarnT = return $ Yarn (show v)
 
-cast (Numbar v) YarnT = return $ Yarn (printf "%.2f" (truncateFloat v 2) :: String)
+cast (Numbar v) YarnT = return $ Yarn (printf "%.2f" v :: String)
 
 cast (Yarn v) YarnT = return $ Yarn v
 

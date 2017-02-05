@@ -991,7 +991,15 @@ testNumbarPrecision2 = checkStoreLocal code expected
         code = [r|
         out1 R MAEK 1.599 A YARN
         |]
-        expected = [("out1", Yarn "1.59")]
+        expected = [("out1", Yarn "1.60")]
+
+testNumbarSum :: Assertion
+testNumbarSum = checkStoreLocal code expected
+    where
+        code = [r|
+        out R (MAEK SUM OF 1.23 AN 4.56 A YARN)
+        |]
+        expected = [("out", Yarn "5.79")]
 
 tests :: TestTree
 tests = testGroup "Interpreter"
@@ -1046,4 +1054,5 @@ tests = testGroup "Interpreter"
     -- , testCase "testFail" testFail
     , testCase "testNumbarPrecision" testNumbarPrecision
     , testCase "testNumbarPrecision2" testNumbarPrecision2
+    , testCase "testNumbarSum" testNumbarSum
     ]
