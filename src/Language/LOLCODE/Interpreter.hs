@@ -144,7 +144,7 @@ eval (Call name exprs) = do
                        , breakable = breakable env
                        }
             return ret
-        _ -> fail ("Attempting to call a non-function '" ++ name ++ "'")
+        _ -> failMessage $ "Attempting to call a non-function '" ++ name ++ "'"
 
 eval (Smoosh exprs) = do
     exprs' <- mapM eval exprs

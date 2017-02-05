@@ -3,7 +3,6 @@ module Language.LOLCODE.Parser where
 import           Text.Parsec
 import           Text.Parsec.String      (Parser)
 
-import qualified Text.Parsec.Char        (newline)
 import qualified Text.Parsec.Expr        as Ex
 import qualified Text.Parsec.Token       as Tok
 
